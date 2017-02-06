@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="unit\main.cpp" />
+    <ClCompile Include="unit\test_hierarchical_mutex.cpp" />
+    <ClCompile Include="unit\test_lock_unique_pair.cpp" />
+    <ClCompile Include="unit\test_runtime_concurrency.cpp" />
+    <ClCompile Include="unit\test_threadsafe_queue.cpp" />
+    <ClCompile Include="unit\test_threadsafe_stack.cpp" />
+    <ClCompile Include="unit\test_unique_pair.cpp" />
+    <ClCompile Include="unit\test_move.cpp" />
+    <ClCompile Include="unit\test_async.cpp" />
+    <ClCompile Include="unit\test_thread_unjoinable.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="unit\tut.h" />
+    <ClInclude Include="..\..\include\te.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_block_lock.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_compiler.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_compiler_warning_rollback.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_compiler_warning_suppress.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_empty_error.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_hierarchical_mutex.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_lock_unique_pair.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_runtime_concurrency.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_top_pop.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_unique_pair.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_first_element.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_move.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_async.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_container.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_thread_unjoinable.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{19997196-3d38-439d-86b8-21d2316de8ea}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
