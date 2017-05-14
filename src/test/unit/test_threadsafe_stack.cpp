@@ -58,17 +58,12 @@ namespace tut
       threadsafe_stack s;
 
       ensure("empty", s.empty());
-      try
-      { 
-         auto v = s.pop();
-         ensure(!"this code must be unreachable");
-      }
-      catch (const empty_stack_error& e)
-      {
-         ensure(string("empty error")==e.what());
-      }
-      auto v1 = s.pop(nothrow);
-      ensure("<null pointer>", !v1);
+      auto v = s.pop();
+      ensure(v==nullptr);
+
+//      auto v1 = s.pop(nothrow);
+//      ensure("<null pointer>", !v1);
+
       int v2 = 77;
       s.pop(nothrow,v2);
       ensure("output must be not changed", 77==v2);
@@ -122,7 +117,7 @@ namespace tut
          ready_to_read.set_value();
          start.wait();
          while (input.size() != output.size())
-            if(auto i = stack.pop(nothrow))
+            if(auto i = stack.pop())
                output.push_back(*i);
             else
                this_thread::yield();

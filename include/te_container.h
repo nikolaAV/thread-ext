@@ -42,22 +42,22 @@ namespace thread_ex
 template 
 <
     typename VALUE_T 
-   ,typename CONTAINER_T
+   ,typename STL_CONTAINER_T 
    ,typename MUTEX_T     = std::mutex
 >
 class mutex_wrap
 {
 protected:
-   CONTAINER_T             container_;
+   STL_CONTAINER_T         container_;
    mutable MUTEX_T         mutex_;
 
    using mutex_type        = MUTEX_T;
-   using this_type         = mutex_wrap<VALUE_T, CONTAINER_T, MUTEX_T>;
+   using this_type         = mutex_wrap<VALUE_T, STL_CONTAINER_T, MUTEX_T>;
    using lock_guard_type   = std::lock_guard<mutex_type>;
    using unique_lock_type  = std::unique_lock<mutex_type>;
 
 public:
-   using  container_type   = CONTAINER_T;
+   using  container_type   = STL_CONTAINER_T;
    using  size_type        = typename container_type::size_type;
    using  value_type       = typename container_type::value_type;
    using  ptr_value_type   = std::unique_ptr<value_type>;
@@ -71,8 +71,7 @@ public:
    void              push(value_type&&);
    void              push(const value_type&);
 
-   ptr_value_type    pop();                                    // throw (empty_error) if the container is empty;
-   ptr_value_type    pop(std::nothrow_t);                      // <null> returned if the container is empty
+   ptr_value_type    pop();                                    // <null> returned if the container is empty
    void              pop(value_type& out);                     // throw (empty_error);
    void              pop(container_type& out);                 // throw (empty_error);
    bool              pop(std::nothrow_t, value_type& out);     // false returned if the container is empty
@@ -92,13 +91,13 @@ public:
 template
 <
     typename VALUE_T
-   ,typename CONTAINER_T
+   ,typename STL_CONTAINER_T
    ,typename MUTEX_T = std::mutex
 >
-class condition_wrap : mutex_wrap<VALUE_T, CONTAINER_T, MUTEX_T>
+class condition_wrap : mutex_wrap<VALUE_T, STL_CONTAINER_T, MUTEX_T>
 {
-   using base_type         = mutex_wrap<VALUE_T, CONTAINER_T, MUTEX_T>;
-   using this_type         = condition_wrap<VALUE_T, CONTAINER_T, MUTEX_T>;
+   using base_type         = mutex_wrap<VALUE_T, STL_CONTAINER_T, MUTEX_T>;
+   using this_type         = condition_wrap<VALUE_T, STL_CONTAINER_T, MUTEX_T>;
    using condition_type    = std::condition_variable;
    using unique_lock_type  = typename base_type::unique_lock_type;
 
@@ -120,8 +119,7 @@ public:
    void              push(value_type&&);
    void              push(const value_type&);
 
-   ptr_value_type    try_pop();                                   // throw (empty_error) if the container is empty;
-   ptr_value_type    try_pop(std::nothrow_t);                     // <null> returned if the container is empty
+   ptr_value_type    try_pop();                                   // <null> returned if the container is empty
    void              try_pop(value_type& out);                    // throw (empty_error);
    void              try_pop(container_type& out);                // throw (empty_error);
    bool              try_pop(std::nothrow_t, value_type& out);    // false returned if the container is empty
@@ -236,7 +234,7 @@ inline
 void
 mutex_wrap<V,C,M>::pop(value_type& out)
 {
-   top_pop(container_, out, mutex_);
+   thread_ex::pop<first_element>(container_, out, mutex_);
 }
 
 template <typename V, typename C, typename M>
@@ -257,15 +255,7 @@ inline
 typename mutex_wrap<V,C,M>::ptr_value_type  
 mutex_wrap<V,C,M>::pop()
 {
-   return top_pop(container_, mutex_);
-}
-
-template <typename V, typename C, typename M>
-inline
-typename mutex_wrap<V,C,M>::ptr_value_type  
-mutex_wrap<V,C,M>::pop(std::nothrow_t n)
-{
-   return top_pop(n, container_, mutex_);
+   return thread_ex::pop<first_element>(container_, mutex_);
 }
 
 template <typename V, typename C, typename M>
@@ -273,7 +263,7 @@ inline
 bool
 mutex_wrap<V,C,M>::pop(std::nothrow_t n, value_type& out)
 {
-   return top_pop(n, container_, out, mutex_);
+   return thread_ex::pop<first_element>(n, container_, out, mutex_);
 }
 
 template <typename V, typename C, typename M>
@@ -308,7 +298,7 @@ void
 mutex_wrap<V,C,M>::swap(container_type& other)
 {
    unique_lock_type l(mutex_);
-   container_.swap(other.container_);
+   container_.swap(other);
 }
 
 template <typename V, typename C, typename M>
@@ -419,14 +409,6 @@ condition_wrap<V,C,M>::try_pop()
 
 template <typename V, typename C, typename M>
 inline
-typename condition_wrap<V,C,M>::ptr_value_type
-condition_wrap<V,C,M>::try_pop(std::nothrow_t n)
-{
-   return base_type::pop(n);
-}
-
-template <typename V, typename C, typename M>
-inline
 bool
 condition_wrap<V,C,M>::try_pop(std::nothrow_t n, value_type& out)
 {
@@ -450,7 +432,7 @@ condition_wrap<V,C,M>::wait_pop(value_type& out)
    container_type& cont =  base_type::container_;
    if (cont.empty())
       cond_.wait(l, [&cont] { return !cont.empty(); });
-   top_pop(cont,out,std::nothrow);
+   thread_ex::pop<first_element>(cont,out);
 }
 
 

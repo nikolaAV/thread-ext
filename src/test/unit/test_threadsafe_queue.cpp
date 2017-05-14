@@ -149,20 +149,10 @@ namespace tut
       ensure(0 == q.size());
       ensure(94 == other.size());
 
-      ensure(!q.try_pop(std::nothrow));
+      ensure(!q.try_pop());
       value = 1234;
       ensure(!q.try_pop(std::nothrow,value));
       ensure(1234==value);
-
-      try {
-         q.try_pop();
-         ensure(!"must be unreachable");
-      }
-      catch (const thread_ex::empty_error&)
-      {
-         return;
-      }
-      ensure(!"must be unreachable");
    }
 
    template<>
@@ -268,7 +258,7 @@ namespace tut
          std::vector<value_type> out;
          while(std::future_status::ready!=filled_done.wait_for(std::chrono::microseconds(1)))
             out.push_back(*q_shared.wait_pop());
-         for(auto i = q_shared.try_pop(std::nothrow); i ; i = q_shared.try_pop(std::nothrow))
+         for(auto i = q_shared.try_pop(); i ; i = q_shared.try_pop())
             out.push_back(*i);
          return out;
       };

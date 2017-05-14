@@ -1,11 +1,11 @@
-#ifndef _THREAD_EX_FIRST_ELEMENT_INCLUDED_
-#define _THREAD_EX_FIRST_ELEMENT_INCLUDED_
+#ifndef _THREAD_EX_LAST_ELEMENT_INCLUDED_
+#define _THREAD_EX_LAST_ELEMENT_INCLUDED_
 
 /**
-	\file 		te_first_element.h
+	\file 	te_last_element.h
 	\brief  	some usefull thread primitives which are not included into std (since C++11) 
 	\author 	Alexander Nikolayenko
-	\date		2012-02-10
+	\date		2017-05-14
 	\copyright 	GNU Public License.
 */
 
@@ -20,14 +20,14 @@
 namespace thread_ex
 {
 
-namespace first
+namespace last
 {
    template <typename VALUE_TYPE, typename CONTAINER_TYPE>
    inline
    typename std::queue<VALUE_TYPE, CONTAINER_TYPE>::reference 
    get(std::queue<VALUE_TYPE, CONTAINER_TYPE>& q)
    {
-      return q.front();
+      return q.back();
    }
 
    template <typename VALUE_TYPE, typename CONTAINER_TYPE>
@@ -35,52 +35,44 @@ namespace first
    typename std::queue<VALUE_TYPE, CONTAINER_TYPE>::const_reference 
    get(const std::queue<VALUE_TYPE, CONTAINER_TYPE>& q)
    {
-      return q.front();
-   }
-
-   template <typename VALUE_TYPE, typename CONTAINER_TYPE>
-   inline
-   typename std::stack<VALUE_TYPE, CONTAINER_TYPE>::reference 
-   get(std::stack<VALUE_TYPE, CONTAINER_TYPE>& s)
-   {
-      return s.top();
-   }
-
-   template <typename VALUE_TYPE, typename CONTAINER_TYPE>
-   inline
-   typename std::stack<VALUE_TYPE, CONTAINER_TYPE>::const_reference 
-   get(const std::stack<VALUE_TYPE, CONTAINER_TYPE>& s)
-   {
-      return s.top();
+      return q.back();
    }
 
    template <typename VALUE_TYPE, typename CONTAINER_TYPE>
    inline
    typename std::vector<VALUE_TYPE, CONTAINER_TYPE>::reference
+   get(std::vector<VALUE_TYPE, CONTAINER_TYPE>& v)
    {
+      return v.back();
    }
 
    template <typename VALUE_TYPE, typename CONTAINER_TYPE>
    inline
    typename std::vector<VALUE_TYPE, CONTAINER_TYPE>::const_reference
+   get(const std::vector<VALUE_TYPE, CONTAINER_TYPE>& v)
    {
+      return v.back();
    }
 
    template <typename VALUE_TYPE, typename CONTAINER_TYPE>
    inline
    typename std::list<VALUE_TYPE, CONTAINER_TYPE>::reference
+   get(std::list<VALUE_TYPE, CONTAINER_TYPE>& l)
    {
+      return l.back();
    }
 
    template <typename VALUE_TYPE, typename CONTAINER_TYPE>
    inline
    typename std::list<VALUE_TYPE, CONTAINER_TYPE>::const_reference
+   get(const std::list<VALUE_TYPE, CONTAINER_TYPE>& l)
    {
+      return l.back();
    }
 
-} // end of namespace 'first'
+} // end of namespace 'last'
 
 } // namespace thread_ex
 
-#endif //_THREAD_EX_FIRST_ELEMENT_INCLUDED_
+#endif //_THREAD_EX_LAST_ELEMENT_INCLUDED_
 
