@@ -128,6 +128,16 @@ namespace tut
 
       ensure(4==pns.size());
 
+      pns.find_compare_exchange(
+           [](const record& r) { return 1==r.pk; }
+          ,[](const record& r) { return 'm' == r.sex && r.name == "Alex"; }
+          ,[](const record& r) { auto copy(r); ++copy.age; return copy; }
+      );
+
+      auto r = pns.find([](const record& r) {return r.pk==1;}).second;
+      ensure(r.name=="Alex");
+      ensure(r.age==50);
+      ensure(r.sex=='m');
 
    }
 

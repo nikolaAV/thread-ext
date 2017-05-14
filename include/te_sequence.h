@@ -52,7 +52,7 @@ namespace thread_ex
       using  size_type        = typename container_type::size_type;
       using  value_type       = typename container_type::value_type;
       using  ptr_value_type   = typename base_type::ptr_value_type;
-      using  compare_result   = typename std::pair<bool,value_type>;
+      using  pair_result_type = typename std::pair<bool,value_type>;
 
       sequence_wrap()                           = default;
       sequence_wrap(const this_type&)           = default;
@@ -75,6 +75,15 @@ namespace thread_ex
       bool  operator==(const this_type& other) const;
       bool  operator <(const this_type& other) const;
 
+
+      // @retval
+      //    {false, value_type()==null }        - element was not found
+      //    {true,  element copy}
+      template <typename KEY>
+         // requires
+         // bool KEY             ::operator()(const value_type&) - criteria which element is looking for in the container
+      pair_result_type    find(KEY);
+
          // @retval
          //    {false, value_type()==null }        - element was not found
          //    {false, element in the container}   - no modification, EXPECTED returned false
@@ -84,7 +93,7 @@ namespace thread_ex
          // bool KEY             ::operator()(const value_type&) - criteria which element is looking for in the container
          // bool EXPECTED        ::operator()(const value_type&) - criteria what data element is acceptable 
          // value_type VAL_EXPR  ::operator()(const value_type&) - new data for this element
-      compare_result    find_compare_exchange(KEY, EXPECTED, VAL_EXPR);
+      pair_result_type    find_compare_exchange(KEY, EXPECTED, VAL_EXPR);
 
    };
 
@@ -195,21 +204,34 @@ namespace thread_ex
    template <typename V, typename C, typename M>
    template <typename KEY, typename EXPECTED, typename VAL_EXPR>
    inline
-   typename sequence_wrap<V, C, M>::compare_result    
+   typename sequence_wrap<V, C, M>::pair_result_type    
    sequence_wrap<V, C, M>::find_compare_exchange(KEY key, EXPECTED what, VAL_EXPR how)
    {
+      auto res = std::make_pair(false, value_type{});
       block::lock(mutex_, [&] {
         auto i = std::find_if(container_.begin(), container_.end(), key);
         if(i== container_.end())
-           return std::make_pair(false, value_type{});
+           return;
 
-        const auto res = make_pair(what(*i), *i);
+        res.first = true; res.second = *i;
         if(res.first)
-         *i = how(i);
-        return res;
+         *i = how(*i);
       });
+      return res;
    }
 
+   template <typename V, typename C, typename M>
+   template <typename KEY>
+   inline
+   typename sequence_wrap<V, C, M>::pair_result_type
+   sequence_wrap<V, C, M>::find(KEY key)
+   {
+      return find_compare_exchange(
+         [&](const value_type& v) { return key(v); }
+         ,[](const value_type&)    { return true; }
+         ,[](const value_type& v)  { return v; }
+      );
+   }
 
 
 /**
