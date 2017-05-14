@@ -44,11 +44,11 @@
     <ClInclude Include="..\..\include\te_last_element.h" />
     <ClInclude Include="..\..\include\te_lock_unique_pair.h" />
     <ClInclude Include="..\..\include\te_move.h" />
+    <ClInclude Include="..\..\include\te_pop.h" />
     <ClInclude Include="..\..\include\te_runtime_concurrency.h" />
     <ClInclude Include="..\..\include\te_container.h" />
     <ClInclude Include="..\..\include\te_sequence.h" />
     <ClInclude Include="..\..\include\te_thread_unjoinable.h" />
-    <ClInclude Include="..\..\include\te_top_pop.h" />
     <ClInclude Include="..\..\include\te_unique_pair.h" />
     <ClInclude Include="unit\tut.h" />
   </ItemGroup>

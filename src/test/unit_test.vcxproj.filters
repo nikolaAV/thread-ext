@@ -42,9 +42,6 @@
     <ClInclude Include="..\..\include\te_runtime_concurrency.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\te_top_pop.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\te_unique_pair.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -67,6 +64,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\te_last_element.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_pop.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
