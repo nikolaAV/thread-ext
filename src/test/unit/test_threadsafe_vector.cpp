@@ -9,8 +9,18 @@
 
 namespace
 {
-   using threadsafe_vector     = thread_ex::threadsafe_vector<int>;
-   using empty_stack_error    = thread_ex::empty_error;
+   using threadsafe_vector = thread_ex::threadsafe_vector<int>;
+   using empty_stack_error  = thread_ex::empty_error;
+
+   struct record 
+   {
+      size_t         pk;
+      std::string    name;
+      size_t         age;
+      unsigned char  sex; // 'f' or 'm';
+   };
+
+   using persons_type = thread_ex::threadsafe_vector<record>;
 
    struct data {};
    using test_group = tut::test_group<data>;
@@ -92,6 +102,33 @@ namespace tut
       ensure(v2 > v1);
       ensure(v1 < v2);
       ensure(v2 != v1);
+   }
+
+   template<>
+   template<>
+   void test_intance::test<4>()
+   {
+      persons_type pns;
+      {
+         record r = {1,"Alex",49,'m'};
+         pns.push_back(r);
+      }
+      {
+         record r = { 2,"Irina",42,'f' };
+         pns.push_back(r);
+      }
+      {
+         record r = { 3,"Anastasya",14,'f' };
+         pns.push_back(r);
+      }
+      {
+         record r = { 4,"Stas",10,'m' };
+         pns.push_back(r);
+      }
+
+      ensure(4==pns.size());
+
+
    }
 
 } // namespace 'tut'

@@ -142,6 +142,11 @@ contains generic container interfaces with no race conditions
 * threadsafe_stack is an analog of std::stack<>
 * threadsafe_queue is an analog of std::queue<>
 
+## te_sequence.h
+a generic sequential container interface with no race conditions
+* threadsafe_vector is an analog of std::vector<>
+* threadsafe_list is an analog of std::list<>
+
 ### related links
 * [C++ Concurrency in Action", chapter 3.2.3, stack](https://www.amazon.com/C-Concurrency-Action-Practical-Multithreading/dp/1933988770) by Anthony Williams
 * [C++ Concurrency in Action", chapter 4.1.2, queue](https://www.amazon.com/C-Concurrency-Action-Practical-Multithreading/dp/1933988770)
