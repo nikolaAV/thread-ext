@@ -57,25 +57,33 @@ namespace first
    template <typename VALUE_TYPE, typename CONTAINER_TYPE>
    inline
    typename std::vector<VALUE_TYPE, CONTAINER_TYPE>::reference
+   get(std::vector<VALUE_TYPE, CONTAINER_TYPE>& v)
    {
+      return v.front();
    }
 
    template <typename VALUE_TYPE, typename CONTAINER_TYPE>
    inline
    typename std::vector<VALUE_TYPE, CONTAINER_TYPE>::const_reference
+   get(const std::vector<VALUE_TYPE, CONTAINER_TYPE>& v)
    {
+      return v.front();
    }
 
    template <typename VALUE_TYPE, typename CONTAINER_TYPE>
    inline
    typename std::list<VALUE_TYPE, CONTAINER_TYPE>::reference
+   get(std::list<VALUE_TYPE, CONTAINER_TYPE>& l)
    {
+      return l.front();
    }
 
    template <typename VALUE_TYPE, typename CONTAINER_TYPE>
    inline
    typename std::list<VALUE_TYPE, CONTAINER_TYPE>::const_reference
+   get(const std::list<VALUE_TYPE, CONTAINER_TYPE>& l)
    {
+      return l.front();
    }
 
 } // end of namespace 'first'

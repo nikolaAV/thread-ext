@@ -11,6 +11,7 @@
     <ClCompile Include="unit\test_move.cpp" />
     <ClCompile Include="unit\test_async.cpp" />
     <ClCompile Include="unit\test_thread_unjoinable.cpp" />
+    <ClCompile Include="unit\test_threadsafe_vector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="unit\tut.h" />
@@ -60,6 +61,12 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\te_thread_unjoinable.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_sequence.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\te_last_element.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

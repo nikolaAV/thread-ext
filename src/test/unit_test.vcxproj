@@ -27,6 +27,7 @@
     <ClCompile Include="unit\test_runtime_concurrency.cpp" />
     <ClCompile Include="unit\test_threadsafe_queue.cpp" />
     <ClCompile Include="unit\test_threadsafe_stack.cpp" />
+    <ClCompile Include="unit\test_threadsafe_vector.cpp" />
     <ClCompile Include="unit\test_thread_unjoinable.cpp" />
     <ClCompile Include="unit\test_unique_pair.cpp" />
   </ItemGroup>
@@ -40,10 +41,12 @@
     <ClInclude Include="..\..\include\te_empty_error.h" />
     <ClInclude Include="..\..\include\te_first_element.h" />
     <ClInclude Include="..\..\include\te_hierarchical_mutex.h" />
+    <ClInclude Include="..\..\include\te_last_element.h" />
     <ClInclude Include="..\..\include\te_lock_unique_pair.h" />
     <ClInclude Include="..\..\include\te_move.h" />
     <ClInclude Include="..\..\include\te_runtime_concurrency.h" />
     <ClInclude Include="..\..\include\te_container.h" />
+    <ClInclude Include="..\..\include\te_sequence.h" />
     <ClInclude Include="..\..\include\te_thread_unjoinable.h" />
     <ClInclude Include="..\..\include\te_top_pop.h" />
     <ClInclude Include="..\..\include\te_unique_pair.h" />

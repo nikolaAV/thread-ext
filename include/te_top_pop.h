@@ -20,6 +20,7 @@
 
 #include "te_empty_error.h"
 #include "te_first_element.h"
+#include "te_last_element.h"
 #include "te_block_lock.h"
 
 
@@ -50,61 +51,74 @@ namespace thread_ex
    @param STDCONTAINERADAPTER is type one of std::stack and std::queue 
 */
 
-template<typename STDCONTAINERADAPTER>
+   struct first_element
+   {
+      template<typename STDCONTAINERADAPTER>
+      static
+      bool
+      pop(STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out)  // returns 'false' if the container is empty
+      {
+         if (c.empty()) return false;
+         out = first::get(c);
+         c.pop();
+         return true;
+      }
+   };
+
+   struct last_element
+   {
+      template<typename STDCONTAINERADAPTER>
+      static
+      inline
+      bool
+      pop(STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out)  // returns 'false' if the container is empty
+      {
+         if (c.empty()) return false;
+         out = last::get(c);
+         c.pop_back();
+         return true;
+      }
+   };
+
+template<typename ELEMENT_T, typename STDCONTAINERADAPTER>
 inline
 bool
-top_pop(STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out, const std::nothrow_t)  // returns 'false' if the container is empty
+pop(STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out)  // returns 'false' if the container is empty
 {
-   if (c.empty()) return false;
-   out = first::get(c);
-   c.pop();
-   return true;
+   return ELEMENT_T::pop(c,out);
 }
 
-template<typename STDCONTAINERADAPTER, typename MUTEX>
-inline
-void
-top_pop(STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out, MUTEX& m) // throw (empty_error)
-{
-   block::lock(m, [&]{
-      if(!top_pop(c,out,std::nothrow))
-         throw empty_error{};
-   });
-}
-
-template<typename STDCONTAINERADAPTER, typename MUTEX>
+template<typename ELEMENT_T, typename STDCONTAINERADAPTER, typename MUTEX>
 inline
 bool
-top_pop(const std::nothrow_t n, STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out, MUTEX& m)
+pop(const std::nothrow_t n, STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out, MUTEX& m)
 {
-   bool res {false};
+   bool res{ false };
    block::lock(m, [&] {
-      res = top_pop(c, out, n);
+      res = pop<ELEMENT_T>(c, out);
    });
    return res;
 }
 
-template<typename STDCONTAINERADAPTER, typename MUTEX>
+template<typename ELEMENT_T, typename STDCONTAINERADAPTER, typename MUTEX>
 inline
-std::unique_ptr<typename STDCONTAINERADAPTER::value_type>
-top_pop(STDCONTAINERADAPTER& c, MUTEX& m)                             // throw (empty_error)
+void
+pop(STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out, MUTEX& m) // throw (empty_error)
 {
-   using value_type = typename STDCONTAINERADAPTER::value_type;
-   auto out = make_unique<value_type>(value_type{});
-   top_pop(c,*out,m);
-   return out;
+   if (!pop<ELEMENT_T>(std::nothrow, c, out, m))
+      throw empty_error{};
 }
 
-template<typename STDCONTAINERADAPTER, typename MUTEX>
+template<typename ELEMENT_T, typename STDCONTAINERADAPTER, typename MUTEX>
 inline
 std::unique_ptr<typename STDCONTAINERADAPTER::value_type>
-top_pop(std::nothrow_t n, STDCONTAINERADAPTER& c, MUTEX& m)
+pop(STDCONTAINERADAPTER& c, MUTEX& m)                             // returns nullptr is a container is empty
 {
    using value_type = typename STDCONTAINERADAPTER::value_type;
    auto out = make_unique<value_type>(value_type{});
-   if(top_pop(n, c, *out, m))
+   if (pop<ELEMENT_T>(std::nothrow, c, *out, m))
       return out;
-   return {nullptr};
+   return{ nullptr };
 }
 
 
