@@ -77,26 +77,31 @@ namespace thread_ex
       bool  operator==(const this_type& other) const;
       bool  operator <(const this_type& other) const;
 
-
-      // @retval
-      //    {false, value_type()==null }        - element was not found
-      //    {true,  element copy}
-      template <typename KEY>
-         // requires
-         // bool KEY             ::operator()(const value_type&) - criteria which element is looking for in the container
-      pair_result_type    find(KEY);
+         // @retval
+         //    {false, value_type()==null }        - element was not found
+         //    {true,  element copy}
+      template <typename UnaryPredicate>
+         // UnaryPredicate - lambda or functor with the signature: bool(const value_type&)
+      pair_result_type find_if(UnaryPredicate) const;
 
          // @retval
          //    {false, value_type()==null }        - element was not found
-         //    {false, element in the container}   - no modification, EXPECTED returned false
-         //    {true,  element in the container}   - data element before modification
-      template <typename KEY, typename EXPECTED, typename VAL_EXPR>
-         // requires
-         // bool KEY             ::operator()(const value_type&) - criteria which element is looking for in the container
-         // bool EXPECTED        ::operator()(const value_type&) - criteria what data element is acceptable 
-         // value_type VAL_EXPR  ::operator()(const value_type&) - new data for this element
-      pair_result_type    find_compare_exchange(KEY, EXPECTED, VAL_EXPR);
+         //    {true,  element copy}               - copy of the element before modification 
+      template <typename UnaryPredicateExpected, typename UnaryFuncDesired>
+         // UnaryPredicateExpected  - lambda or functor with the signature: bool(const value_type&)
+         // UnaryFuncDesired        - lambda or functor with the signature: void(value_type& 'in_out'), returns new value_type in 'in_out'
+      pair_result_type compare_exchange(UnaryPredicateExpected, UnaryFuncDesired);
 
+
+      template <typename Function, typename... Args>
+      inline 
+      typename std::result_of<Function(Args...)>::type // any function, any parameters
+      call_under_lock(Function&& f, Args... args);
+
+      template <typename Function, typename... Args>
+      inline 
+      typename std::result_of<Function(Args...)>::type
+      call_under_lock(Function&& f, Args... args) const;
    };
 
    /**
@@ -156,7 +161,7 @@ namespace thread_ex
    void
    sequence_wrap<V, C, M>::push_back(value_type&& v)
    {
-      block::lock(mutex_, [&] {
+      call_under_lock([&](){
          container_.push_back(std::move(v));
       });
    }
@@ -166,9 +171,9 @@ namespace thread_ex
    void
    sequence_wrap<V, C, M>::push_back(const value_type& v)
    {
-      block::lock(mutex_, [&] {
+      call_under_lock([&](){
          container_.push_back(v);
-      });
+      });     
    }
 
    template <typename V, typename C, typename M>
@@ -204,38 +209,54 @@ namespace thread_ex
    }
 
    template <typename V, typename C, typename M>
-   template <typename KEY, typename EXPECTED, typename VAL_EXPR>
-   inline
-   typename sequence_wrap<V, C, M>::pair_result_type    
-   sequence_wrap<V, C, M>::find_compare_exchange(KEY key, EXPECTED what, VAL_EXPR how)
+   template <typename Function, typename... Args>
+   inline 
+   typename std::result_of<Function(Args...)>::type
+   sequence_wrap<V, C, M>::call_under_lock(Function&& f, Args... args)
    {
-      auto res = std::make_pair(false, value_type{});
-      block::lock(mutex_, [&] {
-        auto i = std::find_if(container_.begin(), container_.end(), key);
-        if(i== container_.end())
-           return;
+      std::lock_guard<mutex_type> hold{ mutex_ };
+      return f(std::forward<Args>(args)...);
+   }    
 
-        res.second = *i;
-        res.first = what(*i); 
-        if(res.first)
-            *i = how(*i);
-      });
-      return res;
+   template <typename V, typename C, typename M>
+   template <typename Function, typename... Args>
+   inline 
+   typename std::result_of<Function(Args...)>::type
+   sequence_wrap<V, C, M>::call_under_lock(Function&& f, Args... args) const
+   {
+      std::lock_guard<mutex_type> hold{ mutex_ };
+      return f(std::forward<Args>(args)...);
+   }    
+
+   template <typename V, typename C, typename M>
+   template <typename UnaryPredicate> // UnaryPredicate - lambda or functor with the signature: bool(const value_type&)
+   inline
+   typename sequence_wrap<V, C, M>::pair_result_type 
+   sequence_wrap<V, C, M>::find_if(UnaryPredicate p) const
+   {
+      return call_under_lock([&]{
+         auto i = std::find_if(begin(container_),end(container_),p);
+         return (i!=end(container_))? std::make_pair(true,*i) : std::make_pair(false,value_type{});
+      });        
    }
 
    template <typename V, typename C, typename M>
-   template <typename KEY>
+   template <typename UnaryPredicateExpected, typename UnaryFuncDesired>
    inline
-   typename sequence_wrap<V, C, M>::pair_result_type
-   sequence_wrap<V, C, M>::find(KEY key)
+   typename sequence_wrap<V, C, M>::pair_result_type 
+   sequence_wrap<V, C, M>::compare_exchange(UnaryPredicateExpected e, UnaryFuncDesired d)
    {
-      return find_compare_exchange(
-         [&](const value_type& v) { return key(v); }
-         ,[](const value_type&)    { return true; }
-         ,[](const value_type& v)  { return v; }
-      );
+      return call_under_lock([&]{
+         auto res = std::make_pair(false,value_type{});
+         auto i = std::find_if(begin(container_),end(container_),e);
+         if(i==end(container_))
+            return res; 
+         res.first = true;
+         res.second = *i; 
+         d(*i);
+         return res;
+      });        
    }
-
 
 /**
    \brief  a vector with (1) no race conditions in the interface and (2) each public method is atomic

@@ -127,17 +127,38 @@ namespace tut
       }
 
       ensure(4==pns.size());
+      auto out = pns.find_if([](const record& r){ 
+                        return 1==r.pk;
+                    });
+      ensure(out.first && "Alex"==out.second.name);
+      out = pns.find_if([](const record& r){
+                        return 4==r.pk;
+                    });
+      ensure(out.first && "Stas"==out.second.name);
 
-      pns.find_compare_exchange(
-           [](const record& r) { return 1==r.pk; }
-          ,[](const record& r) { return 'm' == r.sex && r.name == "Alex"; }
-          ,[](const record& r) { auto copy(r); ++copy.age; return copy; }
+      out = pns.compare_exchange(
+            [](const record& r){
+                  return "Irina"==r.name; 
+            },
+            [](record& r){
+                  return ++r.age; 
+            }
       );
+      ensure(out.first && 42==out.second.age );
+      out = pns.find_if([](const record& r){
+                        return 2==r.pk;
+                    });
+      ensure(out.first && "Irina"==out.second.name && 43==out.second.age);
 
-      auto r = pns.find([](const record& r) {return r.pk==1;}).second;
-      ensure(r.name=="Alex");
-      ensure(r.age==50);
-      ensure(r.sex=='m');
+      out = pns.compare_exchange(
+            [](const record& r){
+                  return "Anastasya"==r.name && 'm'==r.sex; 
+            },
+            [](record& r){
+                  return ++r.age; 
+            }
+      );
+      ensure(!out.first);
 
    }
 
