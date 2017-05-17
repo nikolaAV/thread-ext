@@ -13,6 +13,7 @@
 #include "te_compiler_warning_suppress.h"
 #include <vector>
 #include <list>
+#include <algorithm>
 #include "te_compiler_warning_rollback.h"
 #include "te_container.h"
 #include "te_compiler.h"
@@ -236,7 +237,7 @@ namespace thread_ex
    {
       return call_under_lock([&]{
          auto i = std::find_if(begin(container_),end(container_),p);
-         return (i!=end(container_))? std::make_pair(true,*i) : std::make_pair(false,value_type{});
+         return (i!=end(container_))? std::make_pair(true,*i) : std::make_pair(false,value_type());
       });        
    }
 
@@ -247,7 +248,7 @@ namespace thread_ex
    sequence_wrap<V, C, M>::compare_exchange(UnaryPredicateExpected e, UnaryFuncDesired d)
    {
       return call_under_lock([&]{
-         auto res = std::make_pair(false,value_type{});
+         auto res = std::make_pair(false,value_type());
          auto i = std::find_if(begin(container_),end(container_),e);
          if(i==end(container_))
             return res; 

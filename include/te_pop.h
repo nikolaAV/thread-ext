@@ -109,7 +109,7 @@ pop(STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out, MUTEX
       throw empty_error{};
 }
 
-template<typename ELEMENT_T, typename STDCONTAINERADAPTER, typename MUTEX>
+template<typename ELEMENT_T, typename STDCONTAINERADAPTER, typename MUTEX, typename = typename MUTEX::native_handle_type>
 inline
 std::unique_ptr<typename STDCONTAINERADAPTER::value_type>
 pop(STDCONTAINERADAPTER& c, MUTEX& m)                             // returns nullptr is a container is empty

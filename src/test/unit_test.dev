@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=3
 CompilerSettings=000000c1c0111010000000000
-UnitCount=10
+UnitCount=11
 
 [VersionInfo]
 Major=1
@@ -142,6 +142,16 @@ BuildCmd=
 
 [Unit10]
 FileName=unit\test_thread_unjoinable.cpp
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit11]
+FileName=unit\test_threadsafe_vector.cpp
 CompileCpp=1
 Folder=
 Compile=1
