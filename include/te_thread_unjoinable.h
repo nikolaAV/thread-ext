@@ -58,8 +58,11 @@ class thread_unjoinable
 
 public:
    thread_unjoinable(std::thread&& t) : thread_(std::move(t)) {}
-   thread_unjoinable(thread_unjoinable&&) = default;
-   thread_unjoinable& operator=(thread_unjoinable&&) = default;
+   thread_unjoinable(thread_unjoinable&&)                   = default;
+   thread_unjoinable& operator=(thread_unjoinable&&)        = default;
+   thread_unjoinable(const thread_unjoinable&)              = delete;
+   thread_unjoinable& operator=(const thread_unjoinable&)   = delete;
+
    ~thread_unjoinable()
    {
       if(thread_.joinable())

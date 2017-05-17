@@ -91,7 +91,7 @@ pop(STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out)  // r
 template<typename ELEMENT_T, typename STDCONTAINERADAPTER, typename MUTEX>
 inline
 bool
-pop(const std::nothrow_t n, STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out, MUTEX& m)
+pop(const std::nothrow_t, STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out, MUTEX& m)
 {
    bool res{ false };
    block::lock(m, [&] {

@@ -46,6 +46,8 @@ namespace thread_ex
       using mutex_type        = typename base_type::mutex_type;
       using this_type         = sequence_wrap<VALUE_T, STL_CONTAINER_T, MUTEX_T>;
       using lock_guard_type   = typename base_type::lock_guard_type;
+      using base_type::mutex_;
+      using base_type::container_;
 
    public:
       using  container_type   = typename base_type::container_type;
@@ -213,9 +215,10 @@ namespace thread_ex
         if(i== container_.end())
            return;
 
-        res.first = true; res.second = *i;
+        res.second = *i;
+        res.first = what(*i); 
         if(res.first)
-         *i = how(*i);
+            *i = how(*i);
       });
       return res;
    }
