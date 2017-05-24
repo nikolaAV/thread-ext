@@ -3,6 +3,9 @@
 #include "te_compiler_warning_suppress.h"
 #include <vector>
 #include <chrono>
+#include <algorithm>
+#include <numeric>
+#include <iterator>
 #include "te_compiler_warning_rollback.h"
 #include "tut.h"
 
@@ -159,6 +162,75 @@ namespace tut
             }
       );
       ensure(!out.first);
+
+   }
+
+
+   struct my_vector : threadsafe_vector
+   {
+      bool is_sorted() const
+      {
+         using ForwardIt = typename container_type::const_iterator; 
+         return call_under_lock(std::is_sorted<ForwardIt>,cbegin(container_),cend(container_));
+      }
+      void sort()
+      {
+         using RandomIt = typename container_type::iterator; 
+         call_under_lock(std::sort<RandomIt>,begin(container_),end(container_));
+      }
+
+      template <typename UnaryFun>
+      void unsafe_transform(UnaryFun f)
+      {
+         std::transform(cbegin(container_),cend(container_),begin(container_),f);
+      }
+
+      size_t unsafe_sum() const
+      {
+         return accumulate(cbegin(container_),cend(container_),0);
+      }
+   };
+
+
+
+   template<>
+   template<>
+   void test_intance::test<5>()
+   {
+      my_vector v;
+
+      auto f1 = thread_ex::call_async([&v](){
+            for(size_t i=0; i<10000; i+=2)
+               v.push_back(i);
+      });
+      auto f2 = thread_ex::call_async([&v](){
+            for(size_t i=1; i<10000; i+=2)
+               v.push_back(i);
+      });
+
+      f1.get(),f2.get();
+      ensure(10000==v.size());
+      ensure(!v.is_sorted());
+
+      v.sort();
+      ensure(v.is_sorted());
+
+      auto increment = [](const int& i) { return i+3; };
+      auto decrement = [](const int& i) { return i-2; };
+      auto f3 = thread_ex::call_async(
+          [&v](decltype(increment) f) { v.unsafe_transform(f); }
+         ,increment
+      );
+      auto f4 = thread_ex::call_async(
+          [&v](decltype(decrement) f) { v.unsafe_transform(f); }
+         ,decrement
+      );
+
+      f3.get(),f4.get();
+      ensure(10000==v.size());
+      ensure(v.is_sorted());
+
+      ensure(10000*(10000+1)/2==v.unsafe_sum());
 
    }
 
