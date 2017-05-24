@@ -185,7 +185,7 @@ namespace tut
          std::transform(cbegin(container_),cend(container_),begin(container_),f);
       }
 
-      size_t unsafe_sum() const
+      int unsafe_sum() const
       {
          return accumulate(cbegin(container_),cend(container_),0);
       }
@@ -200,11 +200,11 @@ namespace tut
       my_vector v;
 
       auto f1 = thread_ex::call_async([&v](){
-            for(size_t i=0; i<10000; i+=2)
+            for(int i=0; i<10000; i+=2)
                v.push_back(i);
       });
       auto f2 = thread_ex::call_async([&v](){
-            for(size_t i=1; i<10000; i+=2)
+            for(int i=1; i<10000; i+=2)
                v.push_back(i);
       });
 
