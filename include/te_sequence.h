@@ -14,6 +14,7 @@
 #include <vector>
 #include <list>
 #include <algorithm>
+#include <iterator>
 #include "te_compiler_warning_rollback.h"
 #include "te_container.h"
 #include "te_compiler.h"
@@ -40,7 +41,7 @@ namespace thread_ex
       , typename STL_CONTAINER_T
       , typename MUTEX_T = std::mutex
       >
-   class sequence_wrap : private mutex_wrap<VALUE_T,STL_CONTAINER_T,MUTEX_T>
+   class sequence_wrap : mutex_wrap<VALUE_T,STL_CONTAINER_T,MUTEX_T>
    {
    protected:
       using base_type         = mutex_wrap<VALUE_T, STL_CONTAINER_T, MUTEX_T>;
@@ -60,8 +61,10 @@ namespace thread_ex
       sequence_wrap()                           = default;
       sequence_wrap(const this_type&)           = default;
       sequence_wrap(this_type&&)                = default;
+      sequence_wrap(container_type&&);
       this_type& operator= (const this_type&)   = default;
       this_type& operator= (this_type&&)        = default;
+      this_type& operator= (container_type&&);
 
       void              push_back(value_type&&);
       void              push_back(const value_type&);
@@ -80,12 +83,26 @@ namespace thread_ex
 
          // @retval
          //    {false, value_type()==null }        - element was not found
-         //    {true,  element copy}
+         //    {true,  element copy}               - the first element in the sequence that satisfies specific criteria defined by UnaryPredicate 
       template <typename UnaryPredicate>
          // UnaryPredicate - lambda or functor with the signature: bool(const value_type&)
-      pair_result_type find_if(UnaryPredicate) const;
+      pair_result_type find_first(UnaryPredicate) const;
 
-         // @retval
+      template <typename UnaryPredicate>
+      pair_result_type find_last(UnaryPredicate) const;
+
+         // Copies the elements in the sequence, to 'other' container
+         // returns the number of elements that have just been copied
+      template <typename UnaryPredicate>
+      size_t copy(container_type& other, UnaryPredicate) const;
+         // Removes the elements in the sequence, for every of which, a criteria ('UnaryPredicate') is true
+         // returns the number of removed elements
+      template <typename UnaryPredicate>
+      size_t erase(UnaryPredicate);
+         // Removes all elements from the sequence and returns the number of removed elements
+      size_t clear();
+
+        // @retval
          //    {false, value_type()==null }        - element was not found
          //    {true,  element copy}               - copy of the element before modification 
       template <typename UnaryPredicateExpected, typename UnaryFuncDesired>
@@ -94,6 +111,7 @@ namespace thread_ex
       pair_result_type compare_exchange(UnaryPredicateExpected, UnaryFuncDesired);
 
 
+protected:
       template <typename Function, typename... Args>
       inline 
       typename std::result_of<Function(Args...)>::type // any function, any parameters
@@ -111,14 +129,26 @@ namespace thread_ex
 
    template <typename V, typename C, typename M>
    inline
+   sequence_wrap<V, C, M>::sequence_wrap(container_type&& other)
+      : base_type(std::move(other))
+   {
+   }
+
+   template <typename V, typename C, typename M>
+   inline
+   sequence_wrap<V, C, M>&
+   sequence_wrap<V, C, M>::operator=(container_type&& other)
+   {
+      static_cast<base_type&>(*this) = std::move(other);
+      return *this;
+   }
+
+   template <typename V, typename C, typename M>
+   inline
    bool
    sequence_wrap<V, C, M>::operator==(const this_type& other) const
    {
-      if (this == &other)
-         return true;
-
-      auto l = thread_ex::lock_unique_pair(mutex_, other.mutex_);
-      return container_ == other.container_;
+      return base_type::operator==(other);
    }
 
    template <typename V, typename C, typename M>
@@ -126,11 +156,7 @@ namespace thread_ex
    bool
    sequence_wrap<V, C, M>::operator<(const this_type& other) const
    {
-      if (this == &other)
-         return false;
-
-      auto l = thread_ex::lock_unique_pair(mutex_, other.mutex_);
-      return container_ < other.container_;
+      return base_type::operator<(other);
    }
 
    template <typename V, typename C, typename M>
@@ -233,12 +259,70 @@ namespace thread_ex
    template <typename UnaryPredicate> // UnaryPredicate - lambda or functor with the signature: bool(const value_type&)
    inline
    typename sequence_wrap<V, C, M>::pair_result_type 
-   sequence_wrap<V, C, M>::find_if(UnaryPredicate p) const
+   sequence_wrap<V, C, M>::find_first(UnaryPredicate p) const
    {
+      using namespace std;
       return call_under_lock([&]{
-         auto i = std::find_if(begin(container_),end(container_),p);
-         return (i!=end(container_))? std::make_pair(true,*i) : std::make_pair(false,value_type());
+         auto i = find_if(begin(container_), end(container_),p);
+         return (i!= end(container_))? make_pair(true,*i) : make_pair(false,value_type());
       });        
+   }
+
+   template <typename V, typename C, typename M>
+   template <typename UnaryPredicate> // UnaryPredicate - lambda or functor with the signature: bool(const value_type&)
+   inline
+   typename sequence_wrap<V, C, M>::pair_result_type
+   sequence_wrap<V, C, M>::find_last(UnaryPredicate p) const
+   {
+      using namespace std;
+      return call_under_lock([&] {
+         auto i = find_if(rbegin(container_), rend(container_), p);
+         return (i != rend(container_)) ? make_pair(true, *i) : make_pair(false, value_type());
+      });
+   }
+
+   template <typename V, typename C, typename M>
+   template <typename UnaryPredicate>
+   inline
+   size_t
+   sequence_wrap<V, C, M>::copy(container_type& other, UnaryPredicate f) const
+   {
+      using namespace std;
+      using InputIt  = decltype(begin(container_));
+      using OutputIt = decltype(back_inserter(other));
+
+      call_under_lock(
+         std::copy_if<InputIt, OutputIt, UnaryPredicate>,
+         begin(container_),end(container_),back_inserter(other),f
+      );
+      return other.size();
+   }
+
+   template <typename V, typename C, typename M>
+   template <typename UnaryPredicate>
+   inline
+   size_t
+   sequence_wrap<V, C, M>::erase(UnaryPredicate f)
+   {
+      using namespace std;
+
+      return
+      call_under_lock([&](){
+         auto pos = remove_if(begin(container_), end(container_),f);
+         auto n = distance(pos, end(container_));
+         container_.erase(pos, end(container_));
+         return static_cast<size_t>(n);
+      });
+   }
+
+   template <typename V, typename C, typename M>
+   inline
+   size_t
+   sequence_wrap<V, C, M>::clear()
+   {
+      container_type tmp;
+      swap(tmp);
+      return tmp.size();
    }
 
    template <typename V, typename C, typename M>

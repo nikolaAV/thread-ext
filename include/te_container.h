@@ -65,8 +65,10 @@ public:
    mutex_wrap();
    mutex_wrap(const this_type&);
    mutex_wrap(this_type&&);
+   mutex_wrap(container_type&&);
    this_type& operator= (const this_type&);
    this_type& operator= (this_type&&);
+   this_type& operator= (container_type&&);
 
    void              push(value_type&&);
    void              push(const value_type&);
@@ -113,8 +115,10 @@ public:
    condition_wrap ();
    condition_wrap (const this_type&);
    condition_wrap (this_type&&);
+   condition_wrap(container_type&&);
    this_type& operator= (const this_type&);
    this_type& operator= (this_type&&);
+   this_type& operator= (container_type&&);
 
    void              push(value_type&&);
    void              push(const value_type&);
@@ -166,6 +170,13 @@ mutex_wrap<V,C,M>::mutex_wrap(this_type&& other)
 
 template <typename V, typename C, typename M>
 inline
+mutex_wrap<V, C, M>::mutex_wrap(container_type&& other)
+   : container_(std::move(other))
+{
+}
+
+template <typename V, typename C, typename M>
+inline
 mutex_wrap<V,C,M>& 
 mutex_wrap<V,C,M>::operator= (const this_type& other)
 {
@@ -178,7 +189,6 @@ mutex_wrap<V,C,M>::operator= (const this_type& other)
    return *this;
 }
 
-
 template <typename V, typename C, typename M>
 inline
 mutex_wrap<V,C,M>&
@@ -186,6 +196,17 @@ mutex_wrap<V,C,M>::operator= (this_type&& other)
 {
    block::lock(mutex_,[&]{
       container_ = std::move(other.container_);
+   });
+   return *this;
+}
+
+template <typename V, typename C, typename M>
+inline
+mutex_wrap<V, C, M>&
+mutex_wrap<V, C, M>::operator= (container_type&& other)
+{
+   block::lock(mutex_, [&] {
+      container_ = std::move(other);
    });
    return *this;
 }
@@ -348,6 +369,12 @@ condition_wrap<V,C,M>::condition_wrap(this_type&& other) : base_type(std::move(o
 
 template <typename V, typename C, typename M>
 inline
+condition_wrap<V, C, M>::condition_wrap(container_type&& other) : base_type(std::move(other))
+{
+}
+
+template <typename V, typename C, typename M>
+inline
 condition_wrap<V,C,M>&
 condition_wrap<V,C,M>::operator= (const this_type& other)
 {
@@ -355,11 +382,19 @@ condition_wrap<V,C,M>::operator= (const this_type& other)
    return *this;
 }
 
-
 template <typename V, typename C, typename M>
 inline
 condition_wrap<V,C,M>&
 condition_wrap<V,C,M>::operator= (this_type&& other)
+{
+   static_cast<base_type&>(*this) = std::move(other);
+   return *this;
+}
+
+template <typename V, typename C, typename M>
+inline
+condition_wrap<V, C, M>&
+condition_wrap<V, C, M>::operator= (container_type&& other)
 {
    static_cast<base_type&>(*this) = std::move(other);
    return *this;

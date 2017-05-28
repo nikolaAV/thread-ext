@@ -130,11 +130,11 @@ namespace tut
       }
 
       ensure(4==pns.size());
-      auto out = pns.find_if([](const record& r){ 
+      auto out = pns.find_first([](const record& r){ 
                         return 1==r.pk;
                     });
       ensure(out.first && "Alex"==out.second.name);
-      out = pns.find_if([](const record& r){
+      out = pns.find_first([](const record& r){
                         return 4==r.pk;
                     });
       ensure(out.first && "Stas"==out.second.name);
@@ -148,7 +148,7 @@ namespace tut
             }
       );
       ensure(out.first && 42==out.second.age );
-      out = pns.find_if([](const record& r){
+      out = pns.find_first([](const record& r){
                         return 2==r.pk;
                     });
       ensure(out.first && "Irina"==out.second.name && 43==out.second.age);
@@ -171,7 +171,7 @@ namespace tut
       bool is_sorted() const
       {
          using ForwardIt = typename container_type::const_iterator; 
-         return call_under_lock(std::is_sorted<ForwardIt>,cbegin(container_),cend(container_));
+         return call_under_lock(std::is_sorted<ForwardIt>,begin(container_),end(container_));
       }
       void sort()
       {
@@ -182,12 +182,12 @@ namespace tut
       template <typename UnaryFun>
       void unsafe_transform(UnaryFun f)
       {
-         std::transform(cbegin(container_),cend(container_),begin(container_),f);
+         std::transform(begin(container_),end(container_),begin(container_),f);
       }
 
       int unsafe_sum() const
       {
-         return accumulate(cbegin(container_),cend(container_),0);
+         return accumulate(begin(container_),end(container_),0);
       }
    };
 
@@ -232,6 +232,26 @@ namespace tut
 
       ensure(10000*(10000+1)/2==v.unsafe_sum());
 
+   }
+
+   template<>
+   template<>
+   void test_intance::test<6>()
+   {
+      threadsafe_vector                   v1 (vector<int>{0,1,2,3,4,5,6,7,8,9});
+      threadsafe_vector::container_type   v2;
+      v1.copy(v2,[](const int& i){ return i >= 5; });
+
+      ensure(5==v2.size());
+      ensure(is_sorted(begin(v2),end(v2)));
+
+      v1.erase([](const int& i) { return i >= 5; });
+      ensure(5 == v1.size());
+      ensure(v1 == vector<int>{0, 1, 2, 3, 4});
+
+      const auto n = v1.clear();
+      ensure(0 == v1.size());
+      ensure(5 == n);
    }
 
 } // namespace 'tut'
