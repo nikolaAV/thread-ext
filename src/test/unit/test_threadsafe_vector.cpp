@@ -209,11 +209,11 @@ namespace tut
       });
 
       f1.get(),f2.get();
-      ensure(10000==v.size());
-      ensure(!v.is_sorted());
+      ensure("10000==v.size()", 10000==v.size());
+      ensure("!v.is_sorted()", !v.is_sorted());
 
       v.sort();
-      ensure(v.is_sorted());
+      ensure("v.is_sorted()", v.is_sorted());
 
       auto increment = [](const int& i) { return i+3; };
       auto decrement = [](const int& i) { return i-2; };
@@ -227,11 +227,10 @@ namespace tut
       );
 
       f3.get(),f4.get();
-      ensure(10000==v.size());
-      ensure(v.is_sorted());
+      ensure("after decrement/increment: 10000==v.size()", 10000==v.size());
+      ensure("after decrement/increment: v.is_sorted()", v.is_sorted());
 
-      ensure(10000*(10000+1)/2==v.unsafe_sum());
-
+      ensure("10000*(10000+1)/2==v.unsafe_sum()", 10000*(10000+1)/2==v.unsafe_sum());
    }
 
    template<>
