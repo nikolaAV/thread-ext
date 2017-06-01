@@ -1,6 +1,6 @@
+#include "tut.h"
 #include <string>
 #include <iostream>
-#include "tut.h"
 
 using namespace tut;
 

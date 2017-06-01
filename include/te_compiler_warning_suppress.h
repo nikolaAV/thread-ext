@@ -30,12 +30,17 @@
 
 #ifdef _MSC_VER
 #pragma warning( push )
+   #pragma warning( disable: 4061 ) // enumerator '<case_name>' in switch of enum '<name>' is not explicitly handled by a case label
    #pragma warning( disable: 4265 ) // '<class_name>': class has virtual functions, but destructor is not virtual
    #pragma warning( disable: 4355 ) // 'this': used in base member initializer list
+   #pragma warning( disable: 4365 ) // 'return': conversion from '...' to '...', signed/unsigned mismatch
    #pragma warning( disable: 4571 ) // Informational: catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught
+   #pragma warning( disable: 4623 ) // '<type_name>': default constructor was implicitly defined as deleted
    #pragma warning( disable: 4625 ) // '<class_name>' : copy constructor was implicitly defined as deleted
    #pragma warning( disable: 4626 ) // '<class_name>' : assignment operator was implicitly defined as deleted
    #pragma warning( disable: 4711 ) // function '<name>' selected for automatic inline expansion
+   #pragma warning( disable: 4774 ) // '<function_name>' : format string expected in argument <num> is not a string literal
+   #pragma warning( disable: 4987 ) // nonstandard extension used: 'throw (...)'
    #pragma warning( disable: 5026 ) // '<class_name>': move constructor was implicitly defined as deleted
    #pragma warning( disable: 5027 ) // '<class_name>': move assignment operator was implicitly defined as deleted
    #pragma warning( disable: 5031 ) // #pragma warning(pop) : likely mismatch, popping warning state pushed in different file

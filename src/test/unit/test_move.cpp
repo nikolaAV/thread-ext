@@ -1,12 +1,9 @@
 #include <te_move.h>
+#include <te_compiler_warning_suppress.h>
+#include <array>
+#include <te_compiler_warning_rollback.h>
 #include "tut.h"
 
-#include <stack>
-#include <queue>
-#include <deque>
-#include <vector>
-#include <array>
-#include <list>
 
 namespace
 {

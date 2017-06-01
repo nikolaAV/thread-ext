@@ -10,9 +10,11 @@
 */
 
 
+#include "te_compiler_warning_suppress.h"
 #include <type_traits>
 #include <memory>
 #include <utility>
+#include "te_compiler_warning_rollback.h"
 
 /**
    \brief  various C++ compiler implementations provide specific ways to ...
