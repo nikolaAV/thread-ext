@@ -9,6 +9,7 @@
    #pragma warning( disable: 4623 ) // '<type_name>': default constructor was implicitly defined as deleted
    #pragma warning( disable: 4625 ) // '<class_name>' : copy constructor was implicitly defined as deleted
    #pragma warning( disable: 4626 ) // 'tut::no_such_group': assignment operator was implicitly defined as deleted
+   #pragma warning( disable: 4668 ) // '<macro_name>' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
    #pragma warning( disable: 4711 ) // function '<name>' selected for automatic inline expansion
    #pragma warning( disable: 4774 ) // '<function_name>' : format string expected in argument <num> is not a string literal
    #pragma warning( disable: 4987 ) // nonstandard extension used: 'throw (...)'

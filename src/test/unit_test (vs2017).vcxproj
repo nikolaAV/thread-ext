@@ -55,7 +55,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7FB23B1B-F5AA-478B-B128-C8BBA2FE5AFD}</ProjectGuid>
     <RootNamespace>unit_test</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
