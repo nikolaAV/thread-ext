@@ -32,7 +32,7 @@ namespace thread_ex
 template <typename Function, typename... Args>
 inline 
 std::future<typename std::result_of<Function(Args...)>::type> 
-call_async(Function&& f, Args... args)
+call_async(Function&& f, Args&&... args)
 {
     return std::async(std::launch::async
         ,std::forward<Function>(f)
@@ -43,7 +43,7 @@ call_async(Function&& f, Args... args)
 template <typename Function, typename... Args>
 inline
 std::future<typename std::result_of<Function(Args...)>::type>
-call_deferred(Function&& f, Args... args)
+call_deferred(Function&& f, Args&&... args)
 {
    return std::async(std::launch::deferred
       ,std::forward<Function>(f)
