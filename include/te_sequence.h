@@ -87,7 +87,6 @@ namespace thread_ex
       template <typename UnaryPredicate>
          // UnaryPredicate - lambda or functor with the signature: bool(const value_type&)
       pair_result_type find_first(UnaryPredicate) const;
-
       template <typename UnaryPredicate>
       pair_result_type find_last(UnaryPredicate) const;
 
@@ -95,6 +94,12 @@ namespace thread_ex
          // returns the number of elements that have just been copied
       template <typename UnaryPredicate>
       size_t copy(container_type& other, UnaryPredicate) const;
+
+         // Applies the given UnaryFunction to the every element in the sequence, in order.
+         // returns function object of UnaryFunction type
+      template <typename UnaryFunction> // void fun(const Type &a);
+      UnaryFunction for_each(UnaryFunction) const;
+
          // Removes the elements in the sequence, for every of which, a criteria ('UnaryPredicate') is true
          // returns the number of removed elements
       template <typename UnaryPredicate>
@@ -341,6 +346,20 @@ protected:
          d(*i);
          return res;
       });        
+   }
+
+   template <typename V, typename C, typename M>
+   template <typename UnaryFunction>
+   inline
+   UnaryFunction 
+   sequence_wrap<V, C, M>::for_each(UnaryFunction f) const
+   {
+      using InputIt = decltype(std::begin(container_));
+      return
+         call_under_lock(
+             std::for_each<InputIt,UnaryFunction>
+            ,std::begin(container_),std::end(container_),f
+         );
    }
 
 /**

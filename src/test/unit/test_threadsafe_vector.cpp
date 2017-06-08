@@ -253,4 +253,22 @@ namespace tut
       ensure(5 == n);
    }
 
+   template<>
+   template<>
+   void test_intance::test<7>()
+   {
+      threadsafe_vector v (vector<int>{0,1,2,3,4,5,6,7,8,9});
+      list<int>    odd;
+      list<int>    even;
+
+      v.for_each([&odd,&even](const int& v){
+         if(v%2) odd.push_back(v);
+         else    even.push_back(v);         
+      });
+
+      ensure("odd + even = total", odd.size() + even.size() == v.size());
+      ensure("even list", even ==list<int>{0,2,4,6,8});
+      ensure("odd list",  odd  ==list<int>{1,3,5,7,9});
+   }
+
 } // namespace 'tut'
