@@ -271,4 +271,96 @@ namespace tut
       ensure("odd list",  odd  ==list<int>{1,3,5,7,9});
    }
 
+   template<>
+   template<>
+   void test_intance::test<8>()
+   {
+      struct record { 
+         size_t t0 = 0;
+         size_t t1 = 0;
+         size_t t2 = 0;
+         size_t t3 = 0;
+         long   a  = 0;
+         long   b  = 0;
+         long   c  = 0;
+      };
+
+      using my_container_t = thread_ex::threadsafe_vector<record>;
+
+      my_container_t shared_obj;
+      shared_obj.push_back(record{});
+      auto r = shared_obj.find_first([](const record&r){ return r.t0==0;}).second;
+      ensure(0==r.t0 && 0==r.t1 && 0==r.t2 && 0==r.t3 && 0==r.a);
+
+      const size_t loop_count = 10000;
+
+      auto f1 = thread_ex::call_async([&shared_obj,loop_count](){
+         for(size_t i = 0; i < loop_count; ++i)
+         {   shared_obj.compare_exchange(
+                [](const record&) { return true; }
+               ,[](record& r)       { 
+                     auto a_copy = r.a+1;
+                     auto b_copy = r.b-1;
+                     ++r.t0; 
+                     ++r.t1;
+                     r.b = b_copy;
+                     r.a = a_copy;
+                }
+             );   
+         }
+      });
+
+      auto f2 = thread_ex::call_async([&shared_obj,loop_count](){
+         for(size_t i = 0; i < loop_count; ++i)
+         {   shared_obj.compare_exchange(
+                [](const record&) { return true; }
+               ,[](record& r)       { 
+                     auto b_copy = r.b+1;
+                     auto c_copy = r.c-1;
+                     ++r.t0; 
+                     ++r.t2;
+                     r.c = c_copy;
+                     r.b = b_copy;
+                }
+             );   
+         }
+      });
+
+      auto f3 = thread_ex::call_async([&shared_obj,loop_count](){
+         for(size_t i = 0; i < loop_count; ++i)
+         {   shared_obj.compare_exchange(
+                [](const record&) { return true; }
+               ,[](record& r)       { 
+                     auto c_copy = r.c+1;
+                     auto a_copy = r.a-1;
+                     ++r.t0; 
+                     ++r.t3;
+                     r.a = a_copy;
+                     r.c = c_copy;
+                }
+             );   
+         }
+      });
+
+      auto f0 = thread_ex::call_async([&shared_obj,loop_count](){
+         for(size_t i = 0; i < loop_count; ++i)
+         {   
+            this_thread::yield();
+            this_thread::yield();
+            this_thread::yield();
+            const auto r = shared_obj.find_last([](auto) { return true; }).second;   
+            ensure("r.t0 = t1+t2+t3", r.t0 == r.t1 + r.t2 + r.t3);
+            ensure("t1+t2+t3 are positive", r.t1 && r.t2 && r.t3);
+         }
+
+      });
+
+
+      f1.get(); f2.get(); f3.get(); f0.get();
+      r = shared_obj.find_last([](auto){return true;}).second;
+      ensure("loop_count*3==r.t0", loop_count*3==r.t0);
+      ensure("r.t1==r.t2==r.t3", loop_count==r.t1 && loop_count==r.t2 &&loop_count==r.t3);
+      ensure("a,b,c==0", 0==r.a && 0==r.b && 0==r.c);
+   }
+
 } // namespace 'tut'
