@@ -292,7 +292,7 @@ namespace tut
       auto r = shared_obj.find_first([](const record&r){ return r.t0==0;}).second;
       ensure(0==r.t0 && 0==r.t1 && 0==r.t2 && 0==r.t3 && 0==r.a);
 
-      const size_t loop_count = 10000;
+      const size_t loop_count = 100000;
 
       auto f1 = thread_ex::call_async([&shared_obj,loop_count](){
          for(size_t i = 0; i < loop_count; ++i)
@@ -342,25 +342,25 @@ namespace tut
          }
       });
 
-      auto f0 = thread_ex::call_async([&shared_obj,loop_count](){
-         for(size_t i = 0; i < loop_count; ++i)
+      vector<bool> evidence_thread_in_parallel;
+      ensure(evidence_thread_in_parallel.empty());
+      auto f0 = thread_ex::call_async([&shared_obj,loop_count,&evidence_thread_in_parallel](){
+         record r{};
+         while(loop_count*3!=r.t0)
          {   
-            this_thread::yield();
-            this_thread::yield();
-            this_thread::yield();
-            const auto r = shared_obj.find_last([](auto) { return true; }).second;   
+            r = shared_obj.find_last([](auto) { return true; }).second;   
             ensure("r.t0 = t1+t2+t3", r.t0 == r.t1 + r.t2 + r.t3);
-            ensure("t1+t2+t3 are positive", r.t1 && r.t2 && r.t3);
+            if(r.t1 && r.t2 && r.t3)
+               evidence_thread_in_parallel.push_back(true);
          }
-
       });
-
 
       f1.get(); f2.get(); f3.get(); f0.get();
       r = shared_obj.find_last([](auto){return true;}).second;
       ensure("loop_count*3==r.t0", loop_count*3==r.t0);
       ensure("r.t1==r.t2==r.t3", loop_count==r.t1 && loop_count==r.t2 &&loop_count==r.t3);
       ensure("a,b,c==0", 0==r.a && 0==r.b && 0==r.c);
+      ensure("evidence_thread_in_parallel", !evidence_thread_in_parallel.empty());
    }
 
 } // namespace 'tut'
