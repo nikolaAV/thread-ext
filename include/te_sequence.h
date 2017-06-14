@@ -100,6 +100,11 @@ namespace thread_ex
       template <typename UnaryFunction> // void fun(const Type &a);
       UnaryFunction for_each(UnaryFunction) const;
 
+         // non-const version of 'for_each'
+         // the every element = UnaryFunction(...);
+      template <typename UnaryFunction> // Ret fun(const Type &a);
+      void transform(UnaryFunction);
+
          // Removes the elements in the sequence, for every of which, a criteria ('UnaryPredicate') is true
          // returns the number of removed elements
       template <typename UnaryPredicate>
@@ -360,6 +365,19 @@ protected:
              std::for_each<InputIt,UnaryFunction>
             ,std::begin(container_),std::end(container_),f
          );
+   }
+
+   template <typename V, typename C, typename M>
+   template <typename UnaryFunction>
+   inline
+   void 
+   sequence_wrap<V, C, M>::transform(UnaryFunction f)
+   {
+      using Iterator = decltype(std::begin(container_));
+      call_under_lock(
+            std::transform<Iterator,Iterator,UnaryFunction>
+         ,std::begin(container_),std::end(container_),std::begin(container_),f
+      );
    }
 
 /**

@@ -363,4 +363,16 @@ namespace tut
       ensure("evidence_thread_in_parallel", !evidence_thread_in_parallel.empty());
    }
 
+   template<>
+   template<>
+   void test_intance::test<9>()
+   {
+      threadsafe_vector v(vector<int>{0,1,2,3,4,5,6,7,8,9});
+      v.transform([](const int& i){
+         return i%2? i+10:i;
+      });
+      ensure(v==vector<int>{0,11,2,13,4,15,6,17,8,19});
+   }
+
+
 } // namespace 'tut'
