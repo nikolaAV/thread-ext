@@ -15,6 +15,7 @@
 #include <mutex>
 #include <queue>
 #include <stack>
+#include <utility>
 #include "te_compiler_warning_rollback.h"
 #include "te_compiler.h"
 
@@ -59,7 +60,7 @@ namespace thread_ex
       pop(STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out)  // returns 'false' if the container is empty
       {
          if (c.empty()) return false;
-         out = first::get(c);
+         out = std::move(first::get(c));
          c.pop();
          return true;
       }
@@ -74,7 +75,7 @@ namespace thread_ex
       pop(STDCONTAINERADAPTER& c, typename STDCONTAINERADAPTER::value_type& out)  // returns 'false' if the container is empty
       {
          if (c.empty()) return false;
-         out = last::get(c);
+         out = std::move(last::get(c));
          c.pop_back();
          return true;
       }

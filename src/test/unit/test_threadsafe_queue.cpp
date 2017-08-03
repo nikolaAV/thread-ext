@@ -326,4 +326,43 @@ namespace tut
       ensure(!std::is_sorted(output.begin(), output.end()));
    }
 
+template<>
+   template<>
+   void test_intance::test<10>()
+   {
+      set_test_name("type of element in the queue is only moveable");
+
+      struct A
+      {
+         A()                     = default;
+         A(const A&)             = delete;
+         A& operator=(const A&)  = delete;
+         A(A&&)                  = default;
+         A& operator=(A&&)       = default;
+      };
+
+      threadsafe_queue<A>  queue;
+      ensure(queue.empty());
+
+      queue.push(A{});
+      ensure(1==queue.size());
+      A out;
+      queue.try_pop(out);
+      ensure(queue.empty());
+
+      queue.push(A{});
+      ensure(1==queue.size());
+      auto res = queue.try_pop();
+      ensure(queue.empty() && res.get());
+
+      threadsafe_queue<A>::container_type out2;
+      queue.push(A{});
+      ensure(1==queue.size());
+      queue.try_pop(out2);
+      ensure(queue.empty());
+      ensure(1==out2.size());
+      
+
+   }
+
 } // namespace 'tut'
