@@ -15,6 +15,15 @@
    #pragma warning( disable: 4987 ) // nonstandard extension used: 'throw (...)'
    #pragma warning( disable: 5026 ) // '<type_name>': move constructor was implicitly defined as deleted
    #pragma warning( disable: 5027 ) // '<type_name>': move assignment operator was implicitly defined as deleted
+      // C++ Code Analysis Warnongs:
+   #pragma warning( disable: 26400 ) // Do not dereference a invalid pointer (lifetimes rule 1)
+   #pragma warning( disable: 26423 ) // The allocation was not directly assigned to an owner.
+   #pragma warning( disable: 26424 ) // Failing to delete or assign ownership of allocation at line <...>
+   #pragma warning( disable: 26485 ) // Expression '<...>': No array to pointer decay.
+   #pragma warning( disable: 26493 ) // Don't use C-style casts that would perform a static_cast downcast, const_cast, or reinterpret_cast
+   #pragma warning( disable: 26495 ) // Variable '<class>::<member>' is uninitialized. Always initialize a member variable
+   #pragma warning( disable: 26496 ) // Variable '<name>' is assigned only once, mark it as const
+   #pragma warning( disable: 26499 ) // Could not find any lifetime tracking information for '<expression>'
 #endif
 
 #ifdef __GNUG__

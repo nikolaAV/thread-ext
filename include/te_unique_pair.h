@@ -46,14 +46,14 @@ struct unique_pair : private std::pair<T1,T2>
    using base_t::first;
    using base_t::second;
 
-   unique_pair()                          : base_t() {}
-   unique_pair(const T1& f, const T2& s)  : base_t(f,s) {}
-   unique_pair(T1&& f, T2&& s)            : base_t(std::move(f),std::move(s)) {}
-    
    unique_pair(const this_t&)             = delete;
-   unique_pair(this_t&& rhd)              : base_t(std::move(static_cast<base_t&>(rhd))) {}
-
    unique_pair& operator=(const this_t&)  = delete;
+
+   unique_pair()                          : base_t() {}
+   unique_pair(const T1& f, const T2& s)  : base_t{f,s} {}
+   unique_pair(T1&& f, T2&& s)            : base_t{std::make_pair(std::move(f),std::move(s))} {}
+   unique_pair(this_t&& rhd)              : base_t{std::make_pair(std::move(rhd.first),std::move(rhd.second))} {}
+
    unique_pair& operator=(this_t&& rhd)
    { 
       static_cast<base_t&>(*this) = std::move(static_cast<base_t&>(rhd));
