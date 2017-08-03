@@ -23,6 +23,9 @@
    - std::make_unique - since C++14
    - std::remove_reference_t - since C++14
 
+   namespace 'workaround' must be removed in case of conflict detection 
+   with std::analogues deployed with C++ compiler of newer version  
+
    \remark 
 */
 
@@ -36,6 +39,8 @@
       template <typename T> using remove_reference_t = typename std::remove_reference_t<T>;
 
       using std::make_unique;
+      using std::rbegin;
+      using std::rend;
    }
 
    #define thread_local __declspec(thread)
@@ -49,11 +54,18 @@
    {
       template <typename T> using remove_reference_t = typename std::remove_reference<T>::type;
 
-		template< typename T, class... Args >
-		std::unique_ptr<T> make_unique(Args&&... args)
-		{
-			return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-		}
+      using std::make_unique;
+
+      template <typename C>
+      auto rbegin(C& c) -> decltype(c.rbegin())
+      {
+         return c.rbegin();
+      }
+      template <typename C>
+      auto rend(C& c) -> decltype(c.rend())
+      {
+         return c.rend();
+      }
 
    }
 
@@ -71,6 +83,8 @@ namespace thread_ex
 
    template <typename T> using remove_reference_t = typename workaround::remove_reference_t<T>;
    using workaround::make_unique;
+   using workaround::rbegin;
+   using workaround::rend;
 
 } // namespace thread_ex
 

@@ -17,6 +17,7 @@
 #include "te_threadsafe_queue.h"
 #include "te_unique_pair.h"
 #include "te_lock_unique_pair.h"
+#include "te_thread_pool.h"
 
 namespace thread_ex
 {

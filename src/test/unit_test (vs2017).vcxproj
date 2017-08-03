@@ -28,6 +28,7 @@
     <ClCompile Include="unit\test_threadsafe_queue.cpp" />
     <ClCompile Include="unit\test_threadsafe_stack.cpp" />
     <ClCompile Include="unit\test_threadsafe_vector.cpp" />
+    <ClCompile Include="unit\test_thread_pool.cpp" />
     <ClCompile Include="unit\test_thread_unjoinable.cpp" />
     <ClCompile Include="unit\test_unique_pair.cpp" />
   </ItemGroup>
@@ -48,6 +49,7 @@
     <ClInclude Include="..\..\include\te_runtime_concurrency.h" />
     <ClInclude Include="..\..\include\te_container.h" />
     <ClInclude Include="..\..\include\te_sequence.h" />
+    <ClInclude Include="..\..\include\te_thread_pool.h" />
     <ClInclude Include="..\..\include\te_thread_unjoinable.h" />
     <ClInclude Include="..\..\include\te_unique_pair.h" />
     <ClInclude Include="unit\tut.h" />
@@ -103,7 +105,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
     <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -137,7 +139,7 @@
       <CompileAsWinRT>false</CompileAsWinRT>
       <DisableSpecificWarnings>4820;4514;4710</DisableSpecificWarnings>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <EnablePREfast>true</EnablePREfast>
+      <EnablePREfast>false</EnablePREfast>
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
       <AdditionalIncludeDirectories>..\..\include;..\..\..\tut\include</AdditionalIncludeDirectories>
     </ClCompile>

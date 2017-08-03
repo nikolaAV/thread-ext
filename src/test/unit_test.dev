@@ -10,7 +10,7 @@ PrivateResource=
 ResourceIncludes=
 MakeIncludes=
 Compiler=
-CppCompiler=-Wno-unused-function_@@_
+CppCompiler=-Wno-unused-function_@@_-std=c++1y_@@_
 Linker=_@@_
 IsCpp=1
 Icon=
@@ -29,7 +29,7 @@ IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=3
 CompilerSettings=000000c1c0111010000000000
-UnitCount=11
+UnitCount=13
 
 [VersionInfo]
 Major=1
@@ -152,6 +152,25 @@ BuildCmd=
 
 [Unit11]
 FileName=unit\test_threadsafe_vector.cpp
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit12]
+FileName=Untitled1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit13]
+FileName=unit\test_thread_pool.cpp
 CompileCpp=1
 Folder=
 Compile=1
