@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <memory>
 #include <utility>
+#include <tuple>
 #include "te_compiler_warning_rollback.h"
 
 /**
@@ -74,6 +75,46 @@
 #endif // __GNUG__
 
 
+   namespace workaround
+   {
+      /**
+         idea http://aherrmann.github.io/programming/2016/02/28/unpacking-tuples-in-cpp14/ 
+      */
+
+      template <typename F, size_t... Is>
+      constexpr 
+      decltype(auto) 
+      index_apply_impl(F&& f, std::index_sequence<Is...>) 
+      {
+          return std::forward<F>(f)(std::integral_constant<size_t, Is> {}...);
+      }
+
+      template <size_t N, typename F>
+         // where F is Callable (http://en.cppreference.com/w/cpp/concept/Callable) 
+         // with a sequence of integral constants as variadic input. Signatute Ret (int<0>, int<1>, int<2>, ...)
+      constexpr 
+      decltype(auto) 
+      index_apply(F&& f) 
+      {
+          return index_apply_impl(std::forward<F>(f), std::make_index_sequence<N>{});
+      }
+
+      /**
+         \brief takes a callable and a tuple and calls the callable with the el­e­ments of the tuple as ar­gu­ments.
+         http://en.cppreference.com/w/cpp/utility/apply
+      */
+      template <typename F, typename Tuple>
+      constexpr 
+      decltype(auto)
+      apply(F&& f, Tuple&& t)
+      {
+         return index_apply<std::tuple_size<std::decay_t<Tuple>>::value>([&](auto... Is) {
+            return std::forward<F>(f)(std::get<Is>(std::forward<Tuple>(t))...);
+         });
+      }
+
+   }  // <- end of workaround  
+
 namespace thread_ex
 {
 
@@ -85,6 +126,7 @@ namespace thread_ex
    using workaround::make_unique;
    using workaround::rbegin;
    using workaround::rend;
+   using workaround::apply;
 
 } // namespace thread_ex
 
