@@ -55,6 +55,8 @@ namespace tpis // thread_pool_internals
          void call() override { f_(); }
          void_signature_impl(Callable&& f) : f_(std::move(f)) {}
          void_signature_impl& operator=(Callable&& f) { f_(std::move(f)); return *this; }
+         void_signature_impl(const void_signature_impl&)             = delete;
+         void_signature_impl& operator=(const void_signature_impl&)  = delete;
 
       private:
          Callable f_;
@@ -91,6 +93,8 @@ public:
    thread_pool();
    explicit thread_pool(size_t);
    explicit thread_pool(const deferred_start_type&);
+   thread_pool(const thread_pool&)              = delete;
+   thread_pool& operator=(const thread_pool&)   = delete;
    ~thread_pool();
 
    size_t   thread_count() const noexcept;
@@ -148,6 +152,11 @@ void thread_pool::start(size_t n)
    assert(threads_.empty() && "'start' can be called once");
 
    thread_count_ = n;
+
+#ifdef _MSC_VER
+   #pragma warning( push )
+   #pragma warning( disable: 4571 ) // Informational: catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught
+#endif
    try
    {
       for(size_t i = 0; i < thread_count_; ++i)
@@ -158,8 +167,14 @@ void thread_pool::start(size_t n)
       done_ = true;
       throw;
    }
+#ifdef _MSC_VER
+   #pragma warning( pop )
+#endif
+
+
    assert(n==threads_.size());
 }
+
 
 inline
 void thread_pool::stop(const async_execution_type&)
@@ -197,9 +212,20 @@ thread_pool::async(Function&& f,Args&&... args)
 
    std::packaged_task<result_type(Args&&...)> pack {std::forward<Function>(f)};
    auto future = pack.get_future(); 
+
+#ifdef _MSC_VER
+   #pragma warning( push )
+   #pragma warning( disable: 4625 ) // '<lambda_...>': copy constructor was implicitly defined as deleted
+#endif
+
    auto lambda = [p=std::move(pack),a=std::make_tuple(std::forward<Args>(args)...)]() mutable { 
       apply(std::move(p),std::move(a)); 
    };
+
+#ifdef _MSC_VER
+   #pragma warning( pop )
+#endif
+
    tasks_.push(std::move(lambda));
    return future;
 }
