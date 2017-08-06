@@ -104,7 +104,7 @@ public:
 
    template <typename Function, typename... Args>
    std::future<std::result_of_t<std::decay_t<Function>(std::decay_t<Args>...)>>
-   async(Function&&,Args&&...);
+   submit(Function&&,Args&&...);
 
 private:
    void     listening_thread(); 
@@ -182,7 +182,7 @@ void thread_pool::stop(const async_execution_type&)
    assert(!done_ && "double stop not allowed");
    done_ = true;
    for(size_t i=0; i<thread_count_; ++i)
-      async([](){});      
+      submit([](){});      
 }
 
 inline
@@ -206,7 +206,7 @@ void thread_pool::listening_thread()
 template <typename Function, typename... Args>
 inline
 std::future<std::result_of_t<std::decay_t<Function>(std::decay_t<Args>...)>>
-thread_pool::async(Function&& f,Args&&... args)
+thread_pool::submit(Function&& f,Args&&... args)
 {
    using result_type = std::result_of_t<std::decay_t<Function>(std::decay_t<Args>...)>;
 

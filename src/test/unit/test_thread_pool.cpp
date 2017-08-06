@@ -39,7 +39,7 @@ namespace tut
       ensure( std::thread::hardware_concurrency()==tp.thread_count());
 
       for(size_t i=0; i < 1000; ++i)
-         tp.async(std::ref(l));
+         tp.submit(std::ref(l));
       this_thread::sleep_for(1s);
 
       size_t total_task = 0;
