@@ -87,5 +87,48 @@ namespace tut
    }
 
 
+   template<>
+   template<>
+   void test_instance::test<3>()
+   {
+      set_test_name ("exception handling");
+
+      auto lambda = [] (size_t v) {
+         if(v%2)
+            throw invalid_argument("odd number is not allowed");
+         return v+10;
+      };
+
+      thread_pool tp{1};
+      auto f1 = tp.submit(lambda,1);
+      auto f2 = tp.submit(lambda,2);
+      auto f3 = tp.submit(lambda,3);
+      auto f4 = tp.submit(lambda,4);
+
+      ensure(1==tp.thread_count());
+      ensure(12==f2.get());
+      ensure(14==f4.get());
+
+      try
+      {
+         f1.get();
+         ensure(!"this line is not reachable");
+      }
+      catch(const invalid_argument&)
+      {
+      }
+
+      try
+      {
+         f3.get();
+         ensure(!"this line is not reachable");
+      }
+      catch(const invalid_argument& e)
+      {
+         ensure(string("odd number is not allowed")==e.what());   
+      }
+
+   }
+
 } // namespace tut
 
