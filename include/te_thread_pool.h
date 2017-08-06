@@ -46,13 +46,17 @@ namespace tpis // thread_pool_internals
       struct void_signature
       {
          virtual void call() = 0;
+         virtual bool exit_marker() const noexcept = 0;
          virtual ~void_signature() {}
       };
 
       template <typename Callable>
+         // where Callable is an instance of class template std::packaged_task<...>
       struct void_signature_impl : void_signature
       {
+         bool exit_marker() const noexcept override { return false; }
          void call() override { f_(); }
+
          void_signature_impl(Callable&& f) : f_(std::move(f)) {}
          void_signature_impl& operator=(Callable&& f) { f_(std::move(f)); return *this; }
          void_signature_impl(const void_signature_impl&)             = delete;
@@ -62,10 +66,26 @@ namespace tpis // thread_pool_internals
          Callable f_;
       };
 
+      struct exit_signature_impl : void_signature
+      {
+         bool exit_marker() const noexcept override { return true; }
+         void call() override {}
+      };
+
    public:
-      void operator()() { f_->call(); }
+      template <typename Callable>
+      using package_task_type = void_signature_impl<Callable>;
+      using exit_task_type    = exit_signature_impl;
+
+      /**
+         \retval
+            'true'  - function completed successfully. The current thread is still in active state & continuous listening incoming tasks 
+            'false' - that was the last function call. The listening thread must be terminated.
+      */
+      bool operator()() { f_->call(); return !f_->exit_marker(); }
       template <typename Function>
-      movable_function_body(Function&& f) : f_{ new void_signature_impl<Function>(std::move(f)) } {}
+      movable_function_body(Function&& f)       : f_{ new package_task_type<Function>(std::move(f)) } {}
+      movable_function_body(exit_task_type&&)   : f_{ new exit_task_type{} } {}
 
          // movable only
       movable_function_body()                                         = default;
@@ -84,11 +104,10 @@ class thread_pool
    using movable_function_body   = tpis::movable_function_body;
    using task_queue_type         = threadsafe_queue<movable_function_body>;
    using thread_container_type   = std::vector<joined_thread>;
+   using exit_task_type          = typename movable_function_body::exit_task_type;
 
 public:
    const struct deferred_start_type {}    deferred_start{};
-   const struct async_execution_type {}   async_exec{};
-   const struct sync_execution_type {}    sync_exec{};
 
    thread_pool();
    explicit thread_pool(size_t);
@@ -99,8 +118,10 @@ public:
 
    size_t   thread_count() const noexcept;
    void     start(size_t = std::thread::hardware_concurrency());
-   void     stop(const async_execution_type&);
-   void     stop(const sync_execution_type&);
+      // graceful completion. All pending tasks will be completed before the stop
+   void     stop();
+      // stop working as soon as possible. That means some tasks in the queue might be unprocessed
+   void     terminate(); 
 
    template <typename Function, typename... Args>
    std::future<std::result_of_t<std::decay_t<Function>(std::decay_t<Args>...)>>
@@ -136,7 +157,7 @@ thread_pool::thread_pool(const deferred_start_type&)
 inline
 thread_pool::~thread_pool()
 {
-   stop(async_exec);
+   stop();
 }
 
 inline
@@ -164,32 +185,29 @@ void thread_pool::start(size_t n)
    }
    catch(...)
    {
-      done_ = true;
+      terminate();
       throw;
    }
 #ifdef _MSC_VER
    #pragma warning( pop )
 #endif
 
-
    assert(n==threads_.size());
 }
 
-
 inline
-void thread_pool::stop(const async_execution_type&)
+void thread_pool::stop()
 {
-   assert(!done_ && "double stop not allowed");
-   done_ = true;
    for(size_t i=0; i<thread_count_; ++i)
-      submit([](){});      
+      tasks_.push(exit_task_type{});
+   thread_container_type{}.swap(threads_); 
 }
 
 inline
-void thread_pool::stop(const sync_execution_type&)
+void thread_pool::terminate()
 {
-   stop(async_exec);
-   thread_container_type{}.swap(threads_); 
+   done_ = true;
+   stop();
 }
 
 inline
@@ -199,7 +217,8 @@ void thread_pool::listening_thread()
    {
       movable_function_body f;
       tasks_.wait_pop(f);
-      f();   
+      if(!f())
+         break;   
    }
 } 
 
