@@ -150,4 +150,43 @@ a generic sequential container interface with no race conditions
 * threadsafe_vector is an analog of std::vector<>
 * threadsafe_list is an analog of std::list<>
 
+## te_thread_pool.h
+gives an ability to
+* control a limit of _working threads_. Typically the number of spawned threads is equal to [std::hardware_concurrency](http://en.cppreference.com/w/cpp/thread/thread/hardware_concurrency)
+* wait for tasks submitted to a thread pool
+```cpp
+	// example: execution of std::accumulate in parallel by means thread_pool
+	// how to find sum of natural number sequence
+      constexpr size_t packet_size     = 1000;
+      constexpr size_t packet_number   = 10;
+      constexpr size_t N               = packet_number*packet_size;
 
+      std::vector<size_t> v(N);
+      std::iota(begin(v), end(v), 1); // {1,2,3,4,...N}
+
+      using iterator       = typename std::vector<size_t>::iterator;
+      using range_type     = std::pair<iterator,iterator>;	// sequence of [...)
+      thread_pool   tp;
+      auto accumulate = [&tp](range_type r){
+         return tp.submit(std::accumulate<typename range_type::first_type,size_t>,r.first,r.second,0);
+      };
+
+      auto i = begin(v);
+      std::vector<std::future<size_t>>  partial_sums;
+      while(i !=end(v))
+      {
+         const auto range = make_pair(i,next(i,packet_size));
+         partial_sums.push_back(accumulate(range));	  // <- asynchronous execution 
+         i = range.second;
+      }
+
+      const auto sum = std::accumulate(begin(partial_sums),end(partial_sums),0,[](auto& a, auto& b){
+            return a+b.get();	// <- get() waits for every partial sum completion 
+      });
+      assert(sum==N*(N+1)/2);
+
+
+```
+### related links
+* [C++ Concurrency in Action", chapter 9.1.2](https://www.amazon.com/C-Concurrency-Action-Practical-Multithreading/dp/1933988770) by Anthony Williams
+* [Triangular number](https://en.wikipedia.org/wiki/Triangular_number)

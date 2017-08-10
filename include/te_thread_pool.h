@@ -26,18 +26,22 @@
 #include "te_thread_unjoinable.h"
 
 /**
-   \brief
+   \brief a thread pool is a fixed number of worker threads (typically the same number as the value returned by std::thread::hardware_concurrency()) that process work.
 
-   \remark 
+   On most systems, it’s impractical to have a separate thread for every task that can potentially be done in parallel with other tasks, 
+   but there is  still need to take advantage of the available concurrency where possible. 
+   A thread pool allows you to accomplish this; 
+   tasks that can be executed concurrently are submitted to the pool, 
+   which puts them on a queue of pending work. 
+   Each task is then taken from the queue by one of the worker threads, 
+   which executes the task before looping back to take another from the queue.
+
+   \remark "C++ Concurrency in Action", Anthony Williams, chapter 9.1.2, page 277
+   \example unit/test_thread_pool.cpp
 */
 
 namespace thread_ex
 {
-
-/**
-
-   \example test_thread_pool.cpp
-*/
 
 namespace tpis // thread_pool_internals
 {
@@ -99,6 +103,14 @@ namespace tpis // thread_pool_internals
    };
 }  // end of 'thread_pool_internals'
 
+/**
+   The implementation below allows you be in waiting state to ensure the overall submitted task was complete before returning to the caller.
+   By moving std::future-driven technique into the thread_pool itself, you can wait for the task directly.
+   You can have the submit() function return a task handle of some description that you can then use to wait for the task to complete. 
+   This task handle would wrap the use of condition variables or futures, thus simplifying the code that uses the thread pool.
+   Any task you want to submit is 'f' - a function-delegate or object of 'Callable' concept with 'args...' arbitrary parameters to pass to 'f'.  
+*/
+
 class thread_pool
 {
    using movable_function_body   = tpis::movable_function_body;
@@ -123,6 +135,10 @@ public:
       // stop working as soon as possible. That means some tasks in the queue might be unprocessed
    void     terminate(); 
 
+   /**
+      \brief 'submit' This is very similar to the way that the std::async - based.
+      \retval std::future<...> of behaviour which conforms to the return by std::packaged_task 
+   */
    template <typename Function, typename... Args>
    std::future<std::result_of_t<std::decay_t<Function>(std::decay_t<Args>...)>>
    submit(Function&&,Args&&...);

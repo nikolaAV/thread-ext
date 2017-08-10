@@ -3,6 +3,8 @@
 #include <te_block_lock.h>
 #include <chrono>
 #include <map>
+#include <numeric>
+#include <iterator>
 
 namespace
 {
@@ -191,6 +193,47 @@ namespace tut
          ensure(2==v.n_);
       }
 
+   }
+
+   template<>
+   template<>
+   void test_instance::test<5>()
+   {
+      set_test_name ("natural numbers");  // https://en.wikipedia.org/wiki/1_%2B_2_%2B_3_%2B_4_%2B_%E2%8B%AF
+
+      using value_type     = size_t;
+      using container_type = std::vector<value_type>;
+      using InputIt        = typename container_type::iterator;
+      using future_type    = std::future<value_type>;
+      using results_type   = std::vector<future_type>;
+      using range_type     = std::pair<InputIt,InputIt>;
+
+      constexpr size_t packet_size     = 1000;
+      constexpr size_t packet_number   = 10;
+      constexpr size_t N               = packet_number*packet_size;
+
+      container_type v(N);
+      std::iota(begin(v), end(v), 1);
+
+      thread_pool   tp;
+      auto accumulate = [&tp](range_type r){
+         return tp.submit(std::accumulate<typename range_type::first_type,size_t>,r.first,r.second,0);
+      };
+
+      auto i = begin(v);
+      results_type  partial_sums;
+      while(i !=end(v))
+      {
+         const auto range = make_pair(i,next(i,packet_size));
+         partial_sums.push_back(accumulate(range));
+         i = range.second;
+      }
+
+      const auto sum = std::accumulate(begin(partial_sums),end(partial_sums),0,[](auto& a, auto& b){
+            return a+b.get();
+      });
+
+      ensure(sum==N*(N+1)/2);
    }
 
 } // namespace tut
