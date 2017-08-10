@@ -318,11 +318,7 @@ protected:
    size_t
    sequence_wrap<V, C, M>::move(container_type& other, UnaryPredicate f)
    {
-      using namespace std;
-      using BidirIt  = decltype(begin(container_));
-      using OutputIt = decltype(back_inserter(other));
       auto logical_not_f = [&f](const value_type& v) -> bool { return !f(v); };
-
       call_under_lock([&](){
          auto middle = std::partition(begin(container_),end(container_), logical_not_f); // or std::stable_partition?
          std::move(middle,end(container_),back_inserter(other));
