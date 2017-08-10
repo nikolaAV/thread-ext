@@ -90,10 +90,14 @@ namespace thread_ex
       template <typename UnaryPredicate>
       pair_result_type find_last(UnaryPredicate) const;
 
-         // Copies the elements in the sequence, to 'other' container
+         // Copies the elements for which predicate returns 'true' in the sequence, to 'other' container
          // returns the number of elements that have just been copied
       template <typename UnaryPredicate>
       size_t copy(container_type& other, UnaryPredicate) const;
+         // Moves the elements for which predicate returns 'true' from the sequence, to 'other' container
+         // returns the number of elements that have just been moved
+      template <typename UnaryPredicate>
+      size_t move(container_type& other, UnaryPredicate);
 
          // Applies the given UnaryFunction to the every element in the sequence, in order.
          // returns function object of UnaryFunction type
@@ -305,6 +309,25 @@ protected:
          std::copy_if<InputIt, OutputIt, UnaryPredicate>,
          begin(container_),end(container_),back_inserter(other),f
       );
+      return other.size();
+   }
+
+   template <typename V, typename C, typename M>
+   template <typename UnaryPredicate>
+   inline
+   size_t
+   sequence_wrap<V, C, M>::move(container_type& other, UnaryPredicate f)
+   {
+      using namespace std;
+      using BidirIt  = decltype(begin(container_));
+      using OutputIt = decltype(back_inserter(other));
+      auto logical_not_f = [&f](const value_type& v) -> bool { return !f(v); };
+
+      call_under_lock([&](){
+         auto middle = std::partition(begin(container_),end(container_), logical_not_f); // or std::stable_partition?
+         std::move(middle,end(container_),back_inserter(other));
+         container_.erase(middle,end(container_));
+      });
       return other.size();
    }
 

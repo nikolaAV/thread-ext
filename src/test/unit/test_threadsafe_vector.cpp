@@ -374,5 +374,37 @@ namespace tut
       ensure(v==vector<int>{0,11,2,13,4,15,6,17,8,19});
    }
 
+   template<>
+   template<>
+   void test_intance::test<10>()
+   {
+      enum Colours { Black, Red, White };
+
+      struct Node
+      {
+         explicit Node(Colours c) : colour(c) {}
+         Colours colour;
+
+         Node(const Node&)             = delete;
+         Node& operator=(const Node&)  = delete;
+         Node(Node&&)                  = default;
+         Node& operator=(Node&&)       = default;
+      };
+
+      thread_ex::threadsafe_vector<Node> source;
+      for(size_t i = 0; i < 100; ++i)
+      {
+         source.push_back(Node{Black});   
+         source.push_back(Node{Red});   
+         source.push_back(Node{White});   
+      }
+      ensure(300==source.size());
+
+      std::vector<Node> destination;
+      source.move(destination,[](const Node& n){ return Red==n.colour; });
+
+      ensure(200==source.size());
+      ensure(100==destination.size());
+   }
 
 } // namespace 'tut'

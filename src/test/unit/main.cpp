@@ -10,8 +10,8 @@ int main(int, char**)
     reporter reporter{};
     test_engine.set_callback(&reporter);
 
-    test_engine.run_tests("thread pool");
-    //test_engine.run_tests();
+    //test_engine.run_tests("threadsafe_vector");
+    test_engine.run_tests();
 
     std::cin.get();
     return !reporter.all_ok();
