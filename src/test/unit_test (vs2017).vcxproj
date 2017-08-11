@@ -28,7 +28,9 @@
     <ClCompile Include="unit\test_threadsafe_queue.cpp" />
     <ClCompile Include="unit\test_threadsafe_stack.cpp" />
     <ClCompile Include="unit\test_threadsafe_vector.cpp" />
-    <ClCompile Include="unit\test_thread_pool.cpp" />
+    <ClCompile Include="unit\test_thread_pool.cpp">
+      <DisableSpecificWarnings Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4820;4514;4710;4555</DisableSpecificWarnings>
+    </ClCompile>
     <ClCompile Include="unit\test_thread_unjoinable.cpp" />
     <ClCompile Include="unit\test_unique_pair.cpp" />
   </ItemGroup>

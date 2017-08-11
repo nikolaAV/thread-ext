@@ -140,7 +140,7 @@ public:
       \retval std::future<...> of behaviour which conforms to the return by std::packaged_task 
    */
    template <typename Function, typename... Args>
-   std::future<std::result_of_t<std::decay_t<Function>(std::decay_t<Args>...)>>
+   decltype(auto) // std::futute<retval of Function>
    submit(Function&&,Args&&...);
 
 private:
@@ -240,12 +240,12 @@ void thread_pool::listening_thread()
 
 template <typename Function, typename... Args>
 inline
-std::future<std::result_of_t<std::decay_t<Function>(std::decay_t<Args>...)>>
+decltype(auto)
 thread_pool::submit(Function&& f,Args&&... args)
 {
    using result_type = std::result_of_t<std::decay_t<Function>(std::decay_t<Args>...)>;
 
-   std::packaged_task<result_type(Args&&...)> pack {std::forward<Function>(f)};
+   std::packaged_task<result_type(std::decay_t<Args>...)> pack {std::forward<Function>(f)};
    auto future = pack.get_future(); 
 
 #ifdef _MSC_VER

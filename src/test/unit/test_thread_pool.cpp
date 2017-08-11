@@ -43,7 +43,7 @@ namespace tut
          ensure( std::thread::hardware_concurrency()==tp.thread_count());
 
          for(size_t i=0; i < SUBMISSIONS; ++i)
-            tp.submit(std::ref(l));
+            tp.submit(std::ref(l));    // returned future is ignored, it's ok . This behavious conforms to std::future<> returned by std::packaged_task
       }  // <-- behalf of destructor, stop() will be invoked
 
       size_t total_task_completed = 0;
@@ -84,7 +84,6 @@ namespace tut
          total_task_completed += i.second;
       ensure( SUBMISSIONS>=total_task_completed);
    }
-
 
    template<>
    template<>
@@ -158,15 +157,15 @@ namespace tut
          auto  func = [](value v) { v.n_++; return v; };
          value v {1};
 
-         auto res1 = tp.submit( func, v);          // {2,5} two copies: 1 copy-argument to pass into 'submit' + 1 to pass 'func'; member-copy in the future created by moving 
-         auto res2 = tp.submit( func, value{});    // {0,7} all copies created by moving
-         auto res3 = tp.submit( func, ref(v));     // {1,3} member-copy in the future created by copying
+         auto res1 = tp.submit( func, v);          // {1,9}  1 copying to pass v into 'submit', then this copy will be moved into 'func'  
+         auto res2 = tp.submit( func, value{});    // {0,10} no copying at all
+         auto res3 = tp.submit( func, ref(v));     // {1,3}  1 copying to pass v into 'func'
 
          const auto& v1 = res1.get();
          const auto& v2 = res2.get();
          const auto& v3 = res3.get();
 
-         ensure(2==v1.n_copy_);
+         ensure(1==v1.n_copy_);
          ensure(0==v2.n_copy_);
          ensure(v1.n_copy_ + v1.n_move_==v2.n_copy_ + v2.n_move_);
          ensure(1==v3.n_copy_);
@@ -177,17 +176,11 @@ namespace tut
          auto  func = [](value& v) { v.n_++; return v; };
          value v {1};
 
-         auto res1 = tp.submit( func, v);          // {2,4} two copies: 1 copy-argument to pass into 'submit' + 1 member-copy in the future
-         auto res2 = tp.submit( func, value{});    // {1,5} member-copy in the future
-         auto res3 = tp.submit( func, ref(v));     // {1,2} member-copy in the future
+      //   auto res1 = tp.submit( func, v);        compiler error
+      //   auto res2 = tp.submit( func, value{});  compiler error
+         auto res3 = tp.submit( func, ref(v));     // 1 copying to return copy of reference v
 
-         const auto& v1 = res1.get();
-         const auto& v2 = res2.get();
          const auto& v3 = res3.get();
-
-         ensure(2==v1.n_copy_);
-         ensure(1==v2.n_copy_);
-         ensure(v1.n_copy_ + v1.n_move_==v2.n_copy_ + v2.n_move_);
          ensure(1==v3.n_copy_);
          ensure(1==v3.n_copy_);
          ensure(2==v.n_);
@@ -213,11 +206,11 @@ namespace tut
       constexpr size_t N               = packet_number*packet_size;
 
       container_type v(N);
-      std::iota(begin(v), end(v), 1);
+      std::iota(begin(v), end(v), 1u);
 
       thread_pool   tp;
       auto accumulate = [&tp](range_type r){
-         return tp.submit(std::accumulate<typename range_type::first_type,size_t>,r.first,r.second,0);
+         return tp.submit(std::accumulate<typename range_type::first_type,size_t>,r.first,r.second,0u);
       };
 
       auto i = begin(v);
@@ -229,7 +222,7 @@ namespace tut
          i = range.second;
       }
 
-      const auto sum = std::accumulate(begin(partial_sums),end(partial_sums),0,[](auto& a, auto& b){
+      const auto sum = std::accumulate(begin(partial_sums),end(partial_sums),0u,[](auto& a, auto& b){
             return a+b.get();
       });
 
