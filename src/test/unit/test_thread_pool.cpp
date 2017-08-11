@@ -127,12 +127,6 @@ namespace tut
       }
    }
 
-   template<>
-   template<>
-   void test_instance::test<4>()
-   {
-      set_test_name ("value, rrvalue & rlvalue");
-
       struct value
       {
          value()  = default;
@@ -151,6 +145,13 @@ namespace tut
             cout << "{c:" << n_copy_ << ",m:" << n_move_ << ",n:" << n_ << "}" << endl;
          }
       };
+
+
+   template<>
+   template<>
+   void test_instance::test<4>()
+   {
+      set_test_name ("value, rrvalue & rlvalue");
 
       thread_pool tp;
       {
