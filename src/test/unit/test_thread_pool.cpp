@@ -130,7 +130,7 @@ namespace tut
       struct value
       {
          value()  = default;
-         value(size_t n)       : n_(n) {}
+         explicit value(size_t n)       : n_(n) {}
          value(const value& v) : n_copy_(1+v.n_copy_), n_move_(v.n_move_), n_(v.n_) {}
          value& operator=(const value& v) { n_copy_=1+v.n_copy_; n_move_=v.n_move_; n_=v.n_; return *this; }
          value(value&& v)      : n_copy_(v.n_copy_), n_move_(1+v.n_move_), n_(v.n_) {}

@@ -61,7 +61,7 @@ namespace tpis // thread_pool_internals
          bool exit_marker() const noexcept override { return false; }
          void call() override { f_(); }
 
-         void_signature_impl(Callable&& f) : f_(std::move(f)) {}
+         explicit void_signature_impl(Callable&& f) : f_(std::move(f)) {}
          void_signature_impl& operator=(Callable&& f) { f_(std::move(f)); return *this; }
          void_signature_impl(const void_signature_impl&)             = delete;
          void_signature_impl& operator=(const void_signature_impl&)  = delete;
