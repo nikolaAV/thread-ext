@@ -1,6 +1,15 @@
 #ifndef _THREAD_EX_TUT_INCLUDED_
 #define _THREAD_EX_TUT_INCLUDED_
 
+/**
+   Because of TUT is a third party library we have no chance to edit the original sources.
+   On the other hand, we want to compile our own translation units with the strongest level of static code analysis.
+   This header file is aimed:
+      1 - to wrap the original <tut/tut.hpp> and to hide some warnings that come from it
+      2 - any client code which needs to use TUT is only responsible for including "tut.h" instead of <tut/tut.hpp> 
+*/
+
+
 #ifdef _MSC_VER
    #pragma warning( push )
    #pragma warning( disable: 4061 ) // enumerator 'tut::test_result::skipped' in switch of enum 'tut::test_result::result_type' is not explicitly handled by a case label
@@ -15,10 +24,15 @@
    #pragma warning( disable: 4987 ) // nonstandard extension used: 'throw (...)'
    #pragma warning( disable: 5026 ) // '<type_name>': move constructor was implicitly defined as deleted
    #pragma warning( disable: 5027 ) // '<type_name>': move assignment operator was implicitly defined as deleted
-      // C++ Code Analysis Warnongs:
+
+      // C++ Code Analysis Warnings & CppCoreGuidelines cautions:
    #pragma warning( disable: 26400 ) // Do not dereference a invalid pointer (lifetimes rule 1)
+   #pragma warning( disable: 26409 ) // Avoid calling new and delete explicitly, use std::make_unique<T> instead
+   #pragma warning( disable: 26411 ) // The parameter '<...>' is a reference to unique pointer and it is never reassigned or reset, use T* or T& instead.
+   #pragma warning( disable: 26412 ) // Do not dereference a invalid pointer (lifetimes rule 1)
    #pragma warning( disable: 26423 ) // The allocation was not directly assigned to an owner.
    #pragma warning( disable: 26424 ) // Failing to delete or assign ownership of allocation at line <...>
+   #pragma warning( disable: 26461 ) // The reference argument '<...>' for function <...> can be marked as const.
    #pragma warning( disable: 26485 ) // Expression '<...>': No array to pointer decay.
    #pragma warning( disable: 26493 ) // Don't use C-style casts that would perform a static_cast downcast, const_cast, or reinterpret_cast
    #pragma warning( disable: 26495 ) // Variable '<class>::<member>' is uninitialized. Always initialize a member variable
