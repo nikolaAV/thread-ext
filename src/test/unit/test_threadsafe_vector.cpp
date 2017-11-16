@@ -215,8 +215,8 @@ namespace tut
       v.sort();
       ensure("v.is_sorted()", v.is_sorted());
 
-      auto increment = [](const int& i) { return i+3; };
-      auto decrement = [](const int& i) { return i-2; };
+      const auto increment = [](const int& i) { return i+3; };
+      const auto decrement = [](const int& i) { return i-2; };
       auto f3 = thread_ex::call_async(
           [&v](decltype(increment) f) { v.unsafe_transform(f); }
          ,increment
@@ -299,8 +299,8 @@ namespace tut
          {   shared_obj.compare_exchange(
                 [](const record&) { return true; }
                ,[](record& r)       { 
-                     auto a_copy = r.a+1;
-                     auto b_copy = r.b-1;
+                     const auto a_copy = r.a+1;
+                     const auto b_copy = r.b-1;
                      ++r.t0; 
                      ++r.t1;
                      r.b = b_copy;
@@ -315,8 +315,8 @@ namespace tut
          {   shared_obj.compare_exchange(
                 [](const record&) { return true; }
                ,[](record& r)       { 
-                     auto b_copy = r.b+1;
-                     auto c_copy = r.c-1;
+                     const auto b_copy = r.b+1;
+                     const auto c_copy = r.c-1;
                      ++r.t0; 
                      ++r.t2;
                      r.c = c_copy;
@@ -331,8 +331,8 @@ namespace tut
          {   shared_obj.compare_exchange(
                 [](const record&) { return true; }
                ,[](record& r)       { 
-                     auto c_copy = r.c+1;
-                     auto a_copy = r.a-1;
+                     const auto c_copy = r.c+1;
+                     const auto a_copy = r.a-1;
                      ++r.t0; 
                      ++r.t3;
                      r.a = a_copy;

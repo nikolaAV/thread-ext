@@ -277,7 +277,7 @@ protected:
    {
       using namespace std;
       return call_under_lock([&]{
-         auto i = find_if(begin(container_), end(container_),p);
+         const auto i = find_if(begin(container_), end(container_),p);
          return (i!= end(container_))? make_pair(true,*i) : make_pair(false,value_type());
       });        
    }
@@ -290,7 +290,7 @@ protected:
    {
       using namespace std;
       return call_under_lock([&] {
-         auto i = find_if(rbegin(container_), rend(container_), p);
+         const auto i = find_if(rbegin(container_), rend(container_), p);
          return (i != rend(container_)) ? make_pair(true, *i) : make_pair(false, value_type());
       });
    }
@@ -362,7 +362,7 @@ protected:
    {
       return call_under_lock([&]{
          auto res = std::make_pair(false,value_type());
-         auto i = std::find_if(begin(container_),end(container_),e);
+         const auto i = std::find_if(begin(container_),end(container_),e);
          if(i==end(container_))
             return res; 
          res.first = true;

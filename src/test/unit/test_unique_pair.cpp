@@ -39,11 +39,11 @@ namespace tut
    void test_intance::test<1>()
    {
       unique_pair<int,int> p;
-      auto p2 = make_unique_pair(1, 2);
+      const auto p2 = make_unique_pair(1, 2);
       ensure(1 == p2.first && 2 == p2.second);
 
       size_t val = 3;
-      auto p3 = make_unique_pair(val, val);
+      const auto p3 = make_unique_pair(val, val);
       ensure(val == p3.first && val == p3.second);
    }
 
@@ -79,7 +79,7 @@ namespace tut
       ConstructionCounter cc1, cc2;
       ensure(0 == ConstructionCounter::copying_copy && 0 == ConstructionCounter::moving_copy);
 
-      auto up1 = make_unique_pair(cc1,cc2);
+      const auto up1 = make_unique_pair(cc1,cc2);
       ensure(2 == ConstructionCounter::copying_copy && 0 == ConstructionCounter::moving_copy);
       ensure(2 == up1.first.copying_copy && 0 == up1.second.moving_copy);
    }
@@ -91,7 +91,7 @@ namespace tut
       ConstructionCounter cc1, cc2;
       ensure(0 == ConstructionCounter::copying_copy && 0 == ConstructionCounter::moving_copy);
 
-      auto up1 = make_unique_pair(std::move(cc1), std::move(cc2));
+      const auto up1 = make_unique_pair(std::move(cc1), std::move(cc2));
       ensure(0 == ConstructionCounter::copying_copy && 2 == ConstructionCounter::moving_copy);
       ensure(0 == up1.first.copying_copy && 2 == up1.first.moving_copy);
    }
@@ -103,7 +103,7 @@ namespace tut
       ConstructionCounter cc;
       ensure(0 == ConstructionCounter::copying_copy && 0 == ConstructionCounter::moving_copy);
 
-      auto up1 = make_unique_pair(1, cc);
+      const auto up1 = make_unique_pair(1, cc);
       ensure(1 == ConstructionCounter::copying_copy && 0 == ConstructionCounter::moving_copy);
       ensure(1 == up1.second.copying_copy && 0 == up1.second.moving_copy);
 
